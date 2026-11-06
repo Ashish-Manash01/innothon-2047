@@ -174,12 +174,17 @@ def run(p, detail=False):
         dc_add = dc - 10.0 * organic_mu / organic0_mu
         h2_mt = p["h2_mt_2047"] * max(adopt, 0) if t <= T_FY else p["h2_mt_2047"] * (1 + 0.04 * (t - T_FY))
         h2_twh = h2_mt * p["kwh_per_kg"]  # Mt * kWh/kg = TWh
+        # Optional ELECTRIFICATION layer (low-temperature industrial heat + induction cooking): policy-driven fuel
+        # switching beyond the historical trend. Same adoption S-curve as EVs. Default 0 -> headline unchanged.
+        heat = p.get("heat_twh_2047", 0.0) * max(adopt, 0) if t <= T_FY else p.get("heat_twh_2047", 0.0) * 1.027 ** (t - T_FY)
+        cook = p.get("cook_twh_2047", 0.0) * max(adopt, 0) if t <= T_FY else p.get("cook_twh_2047", 0.0) * 1.01 ** (t - T_FY)
         bridge_t = bridge_now + (p["bridge_2047"] - bridge_now) * frac
         organic_twh = organic_mu / 1e3
         natl.append({"fy_end": t, "pop_mn": tot_pop / 1e3, "organic_req_twh": organic_twh, "ev_twh": ev, "dc_twh": dc,
                      "h2_mt": h2_mt, "h2_twh": h2_twh, "bridge": bridge_t,
                      "gen_organic": organic_twh * bridge_t, "gen_ev_dc": max(ev_add + dc_add, 0) * bridge_t,
-                     "gen_h2": h2_twh * 1.02})
+                     "gen_h2": h2_twh * 1.02, "heat_twh": heat, "cook_twh": cook,
+                     "gen_elec": (heat + cook) * bridge_t})
         if detail:
             for c in state_codes:
                 rows.append({"fy_end": t, "code": c, "req_twh": req_states_mu[c] / 1e3, "pop_k": pop_t[c],
@@ -189,13 +194,18 @@ def run(p, detail=False):
             rows.append({"fy_end": t, "code": "ISTS", "req_twh": ists / 1e3})
         prev = {"gsdp": gsdp_t, "pop": pop_t, "gshare": gshare}
     n = pd.DataFrame(natl).set_index("fy_end")
-    n["gen_grid"] = n.gen_organic + n.gen_ev_dc
+    n["gen_grid"] = n.gen_organic + n.gen_ev_dc + n.gen_elec
     n["gen_total"] = n.gen_grid + n.gen_h2
     return (n, pd.DataFrame(rows)) if detail else n
 
 
 organic0_mu = ((np.exp(base_ln_kwh) * pop_share(BASE_FY - 1).reindex(state_codes) * un_total(BASE_FY - 1) / 1000).sum()
                + other_mu.sum() + ists_mu)
+
+
+def elec_2047(which):
+    """(industrial heat, cooking) consumption in 2047, TWh, for low/base/high."""
+    return L("elec_heat", "consumption_2047_twh", which), L("elec_cook", "consumption_2047_twh", which)
 
 
 def ev_2047(which):

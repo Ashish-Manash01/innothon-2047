@@ -20,3 +20,12 @@ datacentre,embedded_in_history_twh_2025,,10,,TWh,Already inside FY25-26 requirem
 hydrogen,green_h2_2047_mt,5,12,25,Mt/yr,NGHM 5 Mt by 2030 (lagging); NITI-RMI 29 Mt H2 demand by 2050 (94% green); reported govt ambition 25 Mt by 2047
 hydrogen,electrolysis_kwh_per_kg,45,48,52,kWh/kg,IRADe: 5 Mt needs 257 TWh (=51 kWh/kg) in 2030; efficiency improves to 2047
 hydrogen,gen_over_consumption,,1.02,,ratio,Mostly dedicated/captive RE: minimal network losses
+elec_heat,industry_heat_fuel_mtoe_fy24,200,200,200,Mtoe,"Assumption: ~80% of the non-electric part of industry final energy (BEE India Energy Scenario 2023-24: final consumption 597 Mtoe, industry 49.5%)"
+elec_heat,low_temp_share,0.30,0.30,0.30,share,"IEA Electrification special report 2026: heat below 150 C is almost 30% of India's industrial heat demand"
+elec_heat,full_electrification_2047_twh,697,697,697,TWh,"Computed: useful heat (80% boiler eff.) half via heat pumps COP 3, half via electric boilers 98%; industry heat grows 2.7%/yr (ERIA BAU) to 2047"
+elec_heat,adoption_2047,0.05,0.20,0.45,share,"Assumption; Energy Innovation finds electric heat already cheaper than coal below 200 C"
+elec_heat,consumption_2047_twh,35,139,314,TWh,"= full_electrification_2047_twh x adoption_2047"
+elec_cook,lpg_mt_per_year,31,31,31,Mt,"India Forum (Shankar, Apr 2026): 31 Mt LPG a year"
+elec_cook,kwh_per_cylinder,78,78,78,kWh,"India Forum (Shankar, Apr 2026): ~78 kWh replaces one 14.2 kg cylinder"
+elec_cook,adoption_2047,0.05,0.20,0.50,share,"Assumption: share of LPG-equivalent cooking moved to induction by 2047 (+10% for population growth)"
+elec_cook,consumption_2047_twh,9,37,94,TWh,"= 31e9/14.2 cylinders x 78 kWh x 1.10 x adoption_2047"

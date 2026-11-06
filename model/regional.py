@@ -36,11 +36,14 @@ def regional(p, years):
         add = n.gen_ev_dc / n.bridge
         evp = n.ev_twh / (n.ev_twh + n.dc_twh)
         ev = add * evp * evs; dc = add * (1 - evp) * DCS.reindex(REG).fillna(0)
-        grid = (org + ev + dc) * n.bridge
+        pops = s[s.region.notna()].groupby("region").pop_k.sum().reindex(REG).fillna(0)
+        heat = n.heat_twh * evs  # industrial heat follows GSDP
+        cook = n.cook_twh * pops / pops.sum()  # cooking follows population
+        grid = (org + ev + dc + heat + cook) * n.bridge
         h2 = n.gen_h2 * H2S.reindex(REG).fillna(0)
         for r in REG:
             out.append({"fy_end": t, "region": r, "organic_req_twh": org[r], "ev_twh": ev[r], "dc_twh": dc[r],
-                        "gen_grid_twh": grid[r], "gen_h2_twh": h2[r], "gen_total_twh": grid[r] + h2[r]})
+                        "heat_twh": heat[r], "cook_twh": cook[r], "gen_grid_twh": grid[r], "gen_h2_twh": h2[r], "gen_total_twh": grid[r] + h2[r]})
     return pd.DataFrame(out), nb
 
 

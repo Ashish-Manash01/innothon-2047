@@ -27,6 +27,15 @@ datacentre: embedded_in_history_twh_2025,10,TWh,Already inside FY25-26 requireme
 hydrogen: green_h2_2047_mt,12,Mt/yr,NGHM 5 Mt by 2030 (lagging); NITI-RMI 29 Mt H2 demand by 2050 (94% green); reported govt ambition 25 Mt by 2047,demand (new loads)
 hydrogen: electrolysis_kwh_per_kg,48,kWh/kg,IRADe: 5 Mt needs 257 TWh (=51 kWh/kg) in 2030; efficiency improves to 2047,demand (new loads)
 hydrogen: gen_over_consumption,1.02,ratio,Mostly dedicated/captive RE: minimal network losses,demand (new loads)
+elec_heat: industry_heat_fuel_mtoe_fy24,200,Mtoe,"Assumption: ~80% of the non-electric part of industry final energy (BEE India Energy Scenario 2023-24: final consumption 597 Mtoe, industry 49.5%)",demand (new loads)
+elec_heat: low_temp_share,0.30,share,IEA Electrification special report 2026: heat below 150 C is almost 30% of India's industrial heat demand,demand (new loads)
+elec_heat: full_electrification_2047_twh,697,TWh,"Computed: useful heat (80% boiler eff.) half via heat pumps COP 3, half via electric boilers 98%; industry heat grows 2.7%/yr (ERIA BAU) to 2047",demand (new loads)
+elec_heat: adoption_2047,0.20,share,Assumption; Energy Innovation finds electric heat already cheaper than coal below 200 C,demand (new loads)
+elec_heat: consumption_2047_twh,139,TWh,= full_electrification_2047_twh x adoption_2047,demand (new loads)
+elec_cook: lpg_mt_per_year,31,Mt,"India Forum (Shankar, Apr 2026): 31 Mt LPG a year",demand (new loads)
+elec_cook: kwh_per_cylinder,78,kWh,"India Forum (Shankar, Apr 2026): ~78 kWh replaces one 14.2 kg cylinder",demand (new loads)
+elec_cook: adoption_2047,0.20,share,Assumption: share of LPG-equivalent cooking moved to induction by 2047 (+10% for population growth),demand (new loads)
+elec_cook: consumption_2047_twh,37,TWh,= 31e9/14.2 cylinders x 78 kWh x 1.10 x adoption_2047,demand (new loads)
 coal_fixed,1.39,Rs crore/MW-yr,MoP new coal Rs5-6/kWh (2025 auctions 5.38-6.30); split ~Rs2.65/kWh fixed at 60% CF,mix
 coal_var_pithead,3.0,Rs/kWh,Fuel + O&M at pithead (East/West coalfields),mix
 coal_var_nonpithead_extra,0.8,Rs/kWh,Rail freight to North/South (CEA: non-pithead coal costlier),mix

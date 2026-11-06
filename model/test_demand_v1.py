@@ -90,7 +90,15 @@ R.append(("INFO: short-sample within-state b (<=FY18) is unstable", "NOTE", f"b=
 mc = pd.read_csv(dm.OUT / "v1_montecarlo.csv")
 check("Monte Carlo runs complete & finite", mc.filter(like="gen_").notna().all().all() and len(mc) == 2000, f"{len(mc)} runs")
 
+# electrification layer (industrial heat + cooking): off by default, additive when on
+_n0 = dm.run(dm.SCEN["Base"]); _h, _c = dm.elec_2047("base")
+_n1 = dm.run(dict(dm.SCEN["Base"], heat_twh_2047=_h, cook_twh_2047=_c))
+check("Electrification layer off by default", abs(_n0.loc[2047, "gen_elec"]) < 1e-9, "0 TWh")
+check("Electrification layer adds (heat+cook) x bridge", abs((_n1.loc[2047, "gen_total"] - _n0.loc[2047, "gen_total"]) - (_h + _c) * _n1.loc[2047, "bridge"]) < 0.01,
+      f"+{_n1.loc[2047, 'gen_total'] - _n0.loc[2047, 'gen_total']:.0f} TWh")
+
 out = pd.DataFrame(R, columns=["test", "result", "detail"])
 print(out.to_string(index=False))
 out.to_csv(dm.OUT / "v1_tests.csv", index=False)
 print("\n", (out.result == "PASS").sum(), "/", len(out), "passed")
+

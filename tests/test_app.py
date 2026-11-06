@@ -34,6 +34,8 @@ assert m["Non-fossil share 2047"].startswith("77.6"), m["Non-fossil share 2047"]
 at.slider(key="gdp").set_value(7.5); run("GDP 7.5%", at)
 at.slider(key="h2").set_value(25.0); run("Hydrogen 25 Mt", at)
 at.select_slider(key="ev").set_value("Fast"); run("EV fast", at)
+at.select_slider(key="elec").set_value("High"); run("Heat + cooking electrification high", at)
+assert any(m.label == "Heat + cooking electrification" and m.value != "0 TWh" for m in at.metric)
 at.slider(key="b").set_value(0.85); run("Elasticity 0.85 (high demand, stress)", at)
 print("     header:", [m.value for m in at.markdown if "TWh** of electricity" in m.value][0][:120])
 # mix controls (sliders without keys: find by label)

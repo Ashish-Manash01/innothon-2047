@@ -29,3 +29,14 @@ Built 6 Nov 2026. Rebuild everything and re-run all checks with: `python data/va
 7. **Mixed GSDP vintages.** Eight small states lack a same-vintage 2024-25 value; the index value is used and flagged (Goa, Sikkim, Mizoram, Nagaland show odd growth as a result).
 8. **Gaps.** State requirement for FY17 and FY19 not yet located (national totals known). Wind potential for "other states" (27.14 GW) not itemised. Gas new-build cost is an estimate (no recent tariff).
 9. **Errors found and corrected while building.** (a) Mixing two GSDP vintages produced fake jumps (UP +12.6%); fixed by keeping one vintage per state. (b) The all-states GSDP table's India row is one year behind its labels; national series used instead. (c) v0's population inputs were ~1% low; replaced with UN WPP 2024.
+
+## Electrification layer (optional; off in the headline forecast)
+- BEE, *India Energy Scenario 2023-24*: final energy consumption 597 Mtoe, industry 49.5%. https://beeindia.gov.in/sites/default/files/India_Energy_Scenario_for_the_Year_2023-24.pdf
+- IEA, *Electrification* special report (2026), via Power Peak Digest: heat below 150 °C is almost 30% of India's industrial heat demand; India's cost-effective electrification potential 19% → 32% of final energy. https://powerpeakdigest.com/india-electrification-rate-32-percent-iea-report/
+- Energy Innovation, *Electrifying Industrial Heat in India*: electrified heat cheaper than coal in the <100 °C and 100–200 °C bands. https://energyinnovation.org/wp-content/uploads/Electrifying-Industrial-Heat-in-India-1.pdf
+- ERIA, India country report: industry final energy grows ~2.7%/yr to 2050 (BAU). https://www.eria.org/uploads/12_Ch_6-India.pdf
+- A. Shankar, The India Forum (Apr 2026): 31 Mt LPG a year; ~78 kWh replaces one cylinder; full cooking electrification ≈ +20% electricity demand.
+- Sizing (computed, see data/new_loads.csv): industrial heat 697 TWh if fully electrified in 2047 → 35/139/314 TWh at 5/20/45% adoption; cooking 187 TWh LPG-equivalent → 9/37/94 TWh at 5/20/50%.
+
+## EV cross-check (2047 consumption)
+- Model: 459 TWh base (186–977). The Hindu (May 2026): ~500 TWh at 50% road-vehicle electrification by 2047; 900–1,100 TWh at full electrification. Sobha et al. (2023): 295 TWh by 2050 at 45% 2W/4W electric. Base sits inside the published range.

@@ -105,10 +105,11 @@ st.sidebar.title("Demand assumptions")
 st.sidebar.caption("Every change re-runs the state demand model, the regional split, the optimiser and the pathway.")
 base = dm.SCEN["Base"]
 EV = {"Slow": dm.ev_2047("low"), "Base": dm.ev_2047("base"), "Fast": dm.ev_2047("high")}
+ELEC = {"Off": (0.0, 0.0), "Low": dm.elec_2047("low"), "Base": dm.elec_2047("base"), "High": dm.elec_2047("high")}
 
 
 def reset():
-    for k, v in dict(gdp=6.5, b=round(float(dm.B_HAT), 3), k=0.75, pop=1665, ev="Base", dc=250, h2=12.0, bridge=1.06).items():
+    for k, v in dict(gdp=6.5, b=round(float(dm.B_HAT), 3), k=0.75, pop=1665, ev="Base", dc=250, h2=12.0, bridge=1.06, elec="Off").items():
         st.session_state[k] = v
 
 
@@ -122,11 +123,16 @@ pop = st.sidebar.slider("Population 2047, million", 1550, 1780, key="pop", step=
 ev = st.sidebar.select_slider("Electric-vehicle adoption", ["Slow", "Base", "Fast"], key="ev")
 dc = st.sidebar.slider("Data centres in 2047, TWh", 80, 450, key="dc", step=10)
 h2 = st.sidebar.slider("Green hydrogen in 2047, Mt a year", 0.0, 30.0, key="h2", step=0.5)
+elec = st.sidebar.select_slider("Extra electrification: industrial heat + cooking", list(ELEC), key="elec",
+                                help="Policy-driven switch of low-temperature industrial heat (<150 °C) and LPG cooking to electricity, "
+                                     "beyond the historical trend. 2047 consumption, TWh: Low 35 + 9, Base 139 + 37, High 314 + 94. "
+                                     "Off in the headline forecast; see the Assumptions tab for the sizing.")
 bridge = st.sidebar.slider("Generation ÷ consumption ratio in 2047", 1.03, 1.09, key="bridge", step=0.005)
 st.sidebar.button("Reset to base case", on_click=reset)
 
 P = dict(base, gdp=gdp / 100, b=(float(dm.B_HAT) if abs(b - round(float(dm.B_HAT), 3)) < 1e-9 else b), k=k, pop_2047=pop, ev_twh_2047=EV[ev], dc_twh_2047=dc,
-         dc_twh_2040=dc * base["dc_twh_2040"] / base["dc_twh_2047"], h2_mt_2047=h2, bridge_2047=bridge)
+         dc_twh_2040=dc * base["dc_twh_2040"] / base["dc_twh_2047"], h2_mt_2047=h2, bridge_2047=bridge,
+         heat_twh_2047=ELEC[elec][0], cook_twh_2047=ELEC[elec][1])
 DKEY = params_key(P); BKEY = params_key(base)
 nb, stt, reg = run_demand(DKEY)
 nb0, _, reg0 = run_demand(BKEY)
@@ -243,11 +249,12 @@ with tabs[0]:
 # ================================================================== DEMAND
 with tabs[1]:
     st.caption("Use the sidebar to change the drivers. Results update instantly; the base case is shown dashed.")
-    c = st.columns(4)
+    c = st.columns(5)
     c[0].metric("Total 2047", f"{fmt0(tot)} TWh", f"{tot - nb0.loc[2047,'gen_total']:+,.0f} vs base")
     c[1].metric("Organic demand (generation)", f"{fmt0(nb.loc[2047,'gen_organic'])} TWh")
     c[2].metric("EVs + data centres", f"{fmt0(nb.loc[2047,'gen_ev_dc'])} TWh")
     c[3].metric("Green hydrogen", f"{fmt0(nb.loc[2047,'gen_h2'])} TWh", f"{h2:.1f} Mt × {base['kwh_per_kg']:.0f} kWh/kg", delta_color="off")
+    c[4].metric("Heat + cooking electrification", f"{fmt0(nb.loc[2047,'gen_elec'])} TWh", elec, delta_color="off")
     l, r = st.columns(2)
     with l:
         st.subheader("Selected vs base")
@@ -256,7 +263,7 @@ with tabs[1]:
     with r:
         st.subheader("What the demand is made of")
         fig = go.Figure()
-        for col, name, cl in [("gen_organic", "Organic demand", "#3A86C8"), ("gen_ev_dc", "EVs + data centres", "#D0587E"), ("gen_h2", "Green hydrogen", "#34A585")]:
+        for col, name, cl in [("gen_organic", "Organic demand", "#3A86C8"), ("gen_ev_dc", "EVs + data centres", "#D0587E"), ("gen_elec", "Heat + cooking", "#E8A33D"), ("gen_h2", "Green hydrogen", "#34A585")]:
             fig.add_scatter(x=nb.index, y=nb[col], stackgroup="one", name=name, line=dict(color=cl))
         fig.update_layout(height=380, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh generated", legend=dict(orientation="h", y=-0.2), hovermode="x unified")
         st.plotly_chart(fig, width="stretch", key="c6")
@@ -356,7 +363,7 @@ with tabs[2]:
             st.dataframe(o["checks"].astype(str), width="stretch", hide_index=True)
         if st.button("Save this setting for comparison"):
             st.session_state.setdefault("saved", []).append({
-                "Scenario": f"GDP {gdp}%, b {b}, H₂ {h2} Mt | CO₂ {co2}, {nuc.split(' (')[0]}, build ×{rem}, tx ×{tx}",
+                "Scenario": f"GDP {gdp}%, b {b}, H₂ {h2} Mt, elec {elec} | CO₂ {co2}, {nuc.split(' (')[0]}, build ×{rem}, tx ×{tx}",
                 "Demand TWh": tot, **{f"{LAB[s]} %": G[s].sum() / G.sum().sum() * 100 for s in SRC},
                 "Non-fossil %": S["non_fossil_%"], "CO₂ Mt": S["co2_mt"], "₹/kWh": S["cost_rs_per_kwh"],
                 "Unserved TWh": o["unserved"], "Over cap Mt": o["co2_excess"]})

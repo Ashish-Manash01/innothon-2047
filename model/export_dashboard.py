@@ -166,7 +166,11 @@ def sources():
          ("DAE / NPCIL (Parliament replies)", "Nuclear sites and status", "https://dae.gov.in"),
          ("MNRE", "Record solar/wind additions FY26; RE generation by state", "https://mnre.gov.in"),
          ("IEA, IESA, Wood Mackenzie, IRADe, NITI-RMI", "EV, data-centre and green-hydrogen calibration", "see SOURCES.md"),
-         ("CEA NEP 2022-32; CEA indicative 2047 mix", "Benchmarks", "https://cea.nic.in")]
+         ("CEA NEP 2022-32; CEA indicative 2047 mix", "Benchmarks", "https://cea.nic.in"),
+         ("BEE India Energy Scenario 2023-24", "Final energy 597 Mtoe, industry 49.5% (electrification layer sizing)", "https://beeindia.gov.in"),
+         ("IEA Electrification special report (2026)", "Heat <150 C ~30% of India's industrial heat", "https://www.iea.org"),
+         ("Energy Innovation, Electrifying Industrial Heat in India", "Electric heat cost-competitive below 200 C", "https://energyinnovation.org"),
+         ("The India Forum (A. Shankar, Apr 2026)", "LPG 31 Mt/yr; ~78 kWh replaces one cylinder", "https://www.theindiaforum.in")]
     pd.DataFrame(S, columns=["source", "used_for", "link"]).to_csv(OUT / "sources.csv", index=False)
 
 
