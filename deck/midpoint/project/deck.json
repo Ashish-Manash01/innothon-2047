@@ -1,0 +1,41 @@
+{
+ "v": 4,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-06T17:00:00Z"
+ },
+ "lists": "css",
+ "title": "India 2047 Electricity Forecast — Midpoint Review",
+ "cover": "cover",
+ "order": [
+  "cover",
+  "answer",
+  "regional-mix",
+  "uncertainty",
+  "tradeoffs",
+  "validation",
+  "mentor-questions",
+  "next-steps"
+ ],
+ "sections": {
+  "s1": {
+   "description": "Where the model stands",
+   "start": "cover"
+  },
+  "s2": {
+   "description": "Questions and plan",
+   "start": "mentor-questions"
+  }
+ },
+ "faces": {
+  "source-serif-4": {
+   "family": "Source Serif 4",
+   "href": "https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400..700&display=swap"
+  },
+  "ibm-plex-sans": {
+   "family": "IBM Plex Sans",
+   "href": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&display=swap"
+  }
+ },
+ "designSystems": []
+}

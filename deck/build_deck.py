@@ -298,14 +298,14 @@ section("limitations", title("What the model simplifies, and what changes on 13 
         "Being explicit about limits is part of defensibility. None of these is hidden in the dashboard, and the official data release plugs straight into the pipeline.")
 
 # ------------------------------------------------------------------ 18 dashboard + close
-section("dashboard", title("Explore every assumption live", "Interactive dashboard") + f'''
+section("dashboard", title("Explore every assumption live: the models re-run as you move a slider", "Interactive dashboard") + f'''
 <div style="display:flex;flex-direction:row;gap:32px">
-{card("Demand forecast", "Change GDP, income response, EVs, data centres and hydrogen: 405 full model runs, with the Monte Carlo band and tornado.")}
-{card("Generation mix", "Change the CO₂ cap, nuclear policy, build speed and demand: 135 optimiser runs, by region, with capacity, cost and carbon price.")}
-{card("Trace and verify", "Pathway to 2047, FY26 backcast, benchmarks, verification checks, every assumption with its source.")}
+{card("Trace the forecast", "Move GDP, income response, population, EVs, data centres or hydrogen and the state model re-runs. Pick any state to see population, urbanisation, use per person and demand, year by year.")}
+{card("Inspect regional trade-offs", "Change the CO₂ cap, nuclear policy, build speed, transmission or storage cost and the optimiser re-solves all five regions in about two seconds, with 13 checks on every solution.")}
+{card("Explore scenarios", "Save settings and compare them with the 1.2 Gt and draft-NEP-like 1.7 Gt cases; see the pathway re-solve to 2047 and the FY26 backcast.")}
 </div>
-<p style="font-size:30px;line-height:1.4;color:{INK}">AI tools: built with help from Claude (Anthropic) for data gathering, coding and drafting, as the competition terms require us to disclose. Every number traces to a cited source or a reproducible model run.</p>''',
-        "Switch to the dashboard now. Suggested live demo: open Generation mix, slow solar and wind by 25 percent and show the CO2 overshoot; then set nuclear to delayed and show gas returning and the carbon price tripling. Then the Validation tab.")
+<p style="font-size:30px;line-height:1.4;color:{INK}">Built in Streamlit on our own Python models; a pre-computed backup runs on claude.ai. AI tools: built with help from Claude (Anthropic) for data gathering, coding and drafting, as the competition terms require us to disclose.</p>''',
+        "Switch to the live app now and follow the demo script: Overview, then the Karnataka trace, then hydrogen at 25 Mt, then build speed at 0.75 and nuclear delayed on the Generation mix tab, then the checks, the backcast and the scenario comparison. If the app is slow, use the backup tab with the same story.")
 
 # ------------------------------------------------------------------ write
 for sid, s in slides.items():
@@ -322,3 +322,51 @@ deck = {"v": 4, "createdOnFiles": {"v": 1, "at": "2026-11-06T14:30:00Z"}, "lists
 print(len(order), "slides:", order)
 for sid, s in slides.items():
     print(sid, len(s), "chars", s.count("<"), "tags")
+
+
+# ------------------------------------------------------------------ midpoint review pack (18 Nov): reuses slides above
+MID = Path(__file__).parent / "midpoint" / "project"; (MID / "slides").mkdir(parents=True, exist_ok=True)
+mid_order = []
+def mid(sid, html_text):
+    (MID / "slides" / f"{sid}.html").write_text(html_text); mid_order.append(sid)
+
+cover_mid = slides["cover"].replace("Defensibility review", "Midpoint review · 18 November").replace(
+    "Final evaluation, 21–22 November 2026", "Mentor checkpoint, 18 November 2026")
+cover_mid = cover_mid.split("<aside>")[0] + "<aside>Midpoint goal: confirm the regional model and the sensitivity checks with the mentors, and agree what to tighten before the final.</aside>\n</section>\n"
+mid("cover", cover_mid)
+import re as _re
+for sid in ["answer", "regional-mix", "uncertainty", "tradeoffs", "validation"]:
+    mid(sid, _re.sub(r"INNOTHON 2026 · [0-9]+</p>", "Midpoint review</p>", slides[sid]))
+
+qs = lambda h, b: f'<div style="display:flex;flex-direction:column;gap:8px;border-left:6px solid {ACC};padding:8px 0px 8px 32px"><h3 style="font-size:34px;font-weight:600;color:{DARK}">{h}</h3><p style="font-size:26px;line-height:1.4;color:{MUTED}">{b}</p></div>'
+mid("mentor-questions", f'''<section id="mentor-questions" data-transition="fade" style="background:{LIGHT};color:{INK};font-family:{SANS};padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+{title("Five questions we would like the mentors' view on", "For discussion")}
+{qs("1. Headline CO₂ path: 1.2 Gt or 1.7 Gt in 2047?", "1.2 Gt (today's level) gives 78% non-fossil; the draft-NEP-like 1.7 Gt gives 68%. Which is the more defensible base for this jury?")}
+{qs("2. Is 12 Mt of green hydrogen the right base?", "It is the largest single uncertainty (±~1,000 TWh). Should hydrogen electricity sit inside the 2047 requirement or beside it?")}
+{qs("3. Batteries vs pumped storage", "At 2026 costs the optimiser picks 480 GW of 4-hour batteries and no new pumped storage; CEA plans 100 GW of pumped storage by 2036. What are we not pricing?")}
+{qs("4. Build-speed caps", "We cap 2047 at 1,279 GW solar and 375 GW wind (1.6× and 3× today's records). Too tight, or too loose?")}
+{qs("5. The Eastern region", "The East imports 225 TWh and adds 23 GW of nuclear because its sun is weakest and it has no 150 m wind. Realistic?")}
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:{MUTED}">India 2047 electricity forecast · Midpoint review</p>
+<aside>Ask these in order and note each answer; each maps to a switch in the live dashboard, so we can show the effect on the spot.</aside>
+</section>
+''')
+step2 = lambda h, b: f'<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border:1px solid {RULE};border-top:8px solid {ACC2};border-radius:16px;padding:32px"><h3 style="font-size:30px;font-weight:600;color:{DARK}">{h}</h3><p style="font-size:24px;line-height:1.4;color:{MUTED}">{b}</p></div>'
+mid("next-steps", f'''<section id="next-steps" data-transition="fade" style="background:{LIGHT2};color:{INK};font-family:{SANS};padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+{title("From now to the final: plug in the official data, then tighten", "Plan")}
+<div style="display:flex;flex-direction:row;gap:24px">
+{step2("13 Nov · Compare", "One script lists the official files and flags every value that differs from our public data by more than 2%.")}
+{step2("14–16 Nov · Swap and rerun", "Swap the agreed tables, rerun data, demand, Monte Carlo, mix and pathway in one command; 16 + 19 + 13 checks must pass.")}
+{step2("19–20 Nov · Act on mentor input", "Adjust the CO₂ base, hydrogen, storage or build caps as agreed; the dashboard and deck regenerate from the models.")}
+{step2("21–22 Nov · Final", "Defensibility deck plus live demo on the public dashboard; backup dashboard ready.")}
+</div>
+<p style="font-size:28px;line-height:1.4;color:{INK}">Every change will be logged with its cause, so the jury can see how the official data moved the answer.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:{MUTED}">India 2047 electricity forecast · Midpoint review</p>
+<aside>Close by asking which of the five questions the mentors see as most important to resolve before the final.</aside>
+</section>
+''')
+mdeck = {"v": 4, "createdOnFiles": {"v": 1, "at": "2026-11-06T17:00:00Z"}, "lists": "css",
+         "title": "India 2047 Electricity Forecast — Midpoint Review", "cover": "cover", "order": mid_order,
+         "sections": {"s1": {"description": "Where the model stands", "start": "cover"}, "s2": {"description": "Questions and plan", "start": "mentor-questions"}},
+         "faces": deck["faces"], "designSystems": []}
+(MID / "deck.json").write_text(json.dumps(mdeck, ensure_ascii=False, indent=1))
+print("midpoint:", mid_order)
