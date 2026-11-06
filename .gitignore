@@ -5,3 +5,4 @@ official/
 out/*.zip
 out/official_diff.csv
 .venv/
+out/*.png
