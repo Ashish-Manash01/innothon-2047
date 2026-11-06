@@ -1,0 +1,23 @@
+code,cea_region,site,status,capacity_mw
+MH,Western,Tarapur (TAPS 1-4),operating,1400
+RJ,Northern,"Rawatbhata (RAPS 2-6, RAPP-7)",operating,1780
+UP,Northern,Narora (NAPS 1-2),operating,440
+GJ,Western,"Kakrapar (KAPS 1-2, KAPP 3-4)",operating,1840
+KA,Southern,Kaiga (KGS 1-4),operating,880
+TN,Southern,Kalpakkam (MAPS 1-2),operating,440
+TN,Southern,Kudankulam (KKNPP 1-2),operating,2000
+RJ,Northern,Rawatbhata RAPP-8,under construction,700
+TN,Southern,Kudankulam KKNPP 3-4,under construction,2000
+TN,Southern,Kudankulam KKNPP 5-6,under construction,2000
+TN,Southern,Kalpakkam PFBR,under construction,500
+HR,Northern,Gorakhpur GHAVP 1-2,under construction,1400
+KA,Southern,Kaiga 5-6,sanctioned (pre-project),1400
+HR,Northern,Gorakhpur GHAVP 3-4,sanctioned (pre-project),1400
+MP,Western,Chutka 1-2,sanctioned (pre-project),1400
+RJ,Northern,Mahi Banswara 1-4,sanctioned (pre-project),2800
+TN,Southern,Kalpakkam FBR 1-2,sanctioned (pre-project),1000
+MH,Western,Jaitapur 1-6,in-principle site,9900
+AP,Southern,Kovvada 1-6,in-principle site,7248
+GJ,Western,Chhaya Mithi Virdi 1-6,in-principle site,6000
+WB,Eastern,Haripur 1-6,in-principle site,6000
+MP,Western,Bhimpur 1-4,in-principle site,2800

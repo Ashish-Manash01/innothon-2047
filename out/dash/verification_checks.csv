@@ -1,0 +1,14 @@
+check,pass,detail
+"Energy balance met in all 60 region-slices (min slack, TWh)",True,-0.0
+Unserved energy (TWh),True,0.0
+National: gen + Bhutan - losses - demand >= 0 (TWh curtailed/spilled),True,0.0
+National capacity factors within physical limits,True,"{'coal': 0.617, 'gas': 0.151, 'nuclear': 0.8, 'hydro': 0.376, 'solar': 0.214, 'wind': 0.32}"
+Resource potentials & build caps respected,True,
+Committed fleet retained (coal/gas/hydro/nuclear),True,229.3
+CO2 recomputed <= cap + reported overshoot (Mt),True,1200
+Firm capacity / (peak x1.15) by region (<1 means relies on firm imports),True,"[np.float64(1.6), np.float64(1.0), np.float64(0.65), np.float64(0.64), np.float64(2.06)]"
+National firm capacity >= national peak x1.15,True,901 vs 854 GW
+Coal minimum-load (40% of evening) respected,True,
+Storage: discharge = efficiency x charge,True,
+Electrolyser energy delivered = H2 demand,True,587.6
+Corridor flows <= limit (max utilisation),True,1.0

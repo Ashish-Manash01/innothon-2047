@@ -1,0 +1,83 @@
+item,value,unit,basis,model
+Income elasticity b (panel FE),0.689,-,"State fixed-effects panel, 32 states x 11 yrs, SE 0.075",demand
+Urbanisation coefficient c,-0.0034,per pp,"Same panel, SE 0.0033 (not significant; income absorbs it)",demand
+Elasticity decay k (b falls to k*b by 2047),0.75,-,Maturing demand; realised FY18-26 elasticity 0.694,demand
+"GDP growth (real, base)",6.5,%/yr,Scenario 5.5-7.5%,demand
+Population 2047,1665.0,million,UN WPP 2024 medium variant,demand
+Generation / requirement bridge 2047,1.06,ratio,"FY22-26 mean 1.077, falling as RE has low auxiliary use",demand
+Base year FY26 (weather-smoothed),1916.0,TWh gen,Fitted + mean residual FY24-26 (+4.2% vs actual hot/cool-year noise),demand
+ev: two_wheelers_stock_2047,350,million,Assumption: ~1 per 4.8 people in 2047 (vs ~230 mn registered 2W today),demand (new loads)
+ev: two_wheelers_ev_share,0.8,share,Assumption; 2W electrification fastest (EV30@30 trajectory),demand (new loads)
+ev: two_wheelers_kwh_per_vehicle,300,kWh/yr,~10000 km/yr at ~3 kWh/100 km,demand (new loads)
+ev: cars_stock_2047,100,million,Assumption: car ownership ~60-80 per 1000 people,demand (new loads)
+ev: cars_ev_share,0.5,share,Assumption,demand (new loads)
+ev: cars_kwh_per_vehicle,2000,kWh/yr,~12000 km/yr at ~16 kWh/100 km,demand (new loads)
+ev: three_wheelers_stock_2047,10,million,Assumption,demand (new loads)
+ev: three_wheelers_ev_share,0.9,share,E-rickshaws already majority of 3W sales,demand (new loads)
+ev: three_wheelers_kwh_per_vehicle,3000,kWh/yr,~30000 km/yr at ~10 kWh/100 km,demand (new loads)
+ev: buses_stock_2047,2.0,million,Assumption,demand (new loads)
+ev: buses_ev_share,0.7,share,PM e-Bus Sewa / FAME trajectory,demand (new loads)
+ev: buses_kwh_per_vehicle,70000,kWh/yr,~60000 km/yr at ~1.2 kWh/km,demand (new loads)
+ev: trucks_stock_2047,15,million,Assumption,demand (new loads)
+ev: trucks_ev_share,0.25,share,Heavy trucking may shift partly to hydrogen,demand (new loads)
+ev: trucks_kwh_per_vehicle,40000,kWh/yr,Mixed LCV/HCV fleet average,demand (new loads)
+ev: check_2030_twh,25-38,TWh,IEA STEPS ~25 TWh (2030); IESA ~38 TWh (FY2031-32) - our path must pass near these,demand (new loads)
+datacentre: consumption_2047_twh,250,TWh,Wood Mackenzie (Jul 2026): 10 TWh (2025) -> 191 TWh (2040); base extends at ~4%/yr after 2040,demand (new loads)
+datacentre: embedded_in_history_twh_2025,10,TWh,Already inside FY25-26 requirement; only growth above the model's own trend is added,demand (new loads)
+hydrogen: green_h2_2047_mt,12,Mt/yr,NGHM 5 Mt by 2030 (lagging); NITI-RMI 29 Mt H2 demand by 2050 (94% green); reported govt ambition 25 Mt by 2047,demand (new loads)
+hydrogen: electrolysis_kwh_per_kg,48,kWh/kg,IRADe: 5 Mt needs 257 TWh (=51 kWh/kg) in 2030; efficiency improves to 2047,demand (new loads)
+hydrogen: gen_over_consumption,1.02,ratio,Mostly dedicated/captive RE: minimal network losses,demand (new loads)
+coal_fixed,1.39,Rs crore/MW-yr,MoP new coal Rs5-6/kWh (2025 auctions 5.38-6.30); split ~Rs2.65/kWh fixed at 60% CF,mix
+coal_var_pithead,3.0,Rs/kWh,Fuel + O&M at pithead (East/West coalfields),mix
+coal_var_nonpithead_extra,0.8,Rs/kWh,Rail freight to North/South (CEA: non-pithead coal costlier),mix
+gas_fixed,0.8,Rs crore/MW-yr,CCGT capex ~Rs4.5 cr/MW annualised,mix
+gas_var,7.0,Rs/kWh,LNG $10-12/MMBtu x heat rate ~7.95 MJ/kWh,mix
+nuclear_fixed,3.85,Rs crore/MW-yr,MoP new nuclear Rs6-7/kWh at 80% CF; fuel ~Rs1/kWh,mix
+nuclear_var,1.0,Rs/kWh,Fuel + O&M,mix
+hydro_fixed,1.83,Rs crore/MW-yr,MoP new hydro Rs5-6/kWh at ~38% CF,mix
+solar_fixed,0.51,Rs crore/MW-yr,MoP new solar Rs2.5-3.0/kWh at 21% CF,mix
+wind_fixed,0.92,Rs crore/MW-yr,MoP new wind Rs3-4/kWh at 30% CF,mix
+bess4h_fixed,0.36,Rs crore/MW-yr,4-h BESS tenders 2026: Rs2.85-4.35 lakh/MW/month; base Rs3.0 lakh/MW/month,mix
+transfer_cost,0.25,Rs/kWh,Inter-regional wheeling (assumption),mix
+transfer_loss,0.03,share,Inter-regional transmission loss (assumption),mix
+transfer_util,0.75,share,Average utilisation of corridor capacity over the year,mix
+reserve_margin,0.15,share,Planning reserve over peak,mix
+load_factor_2047,0.72,share,FY26: 1707 TWh / (242 GW x 8760) = 0.80; falls with cooling-driven peaks,mix
+solar_daytime_share,0.45,share,Share of grid demand that can be met directly by solar without storage,mix
+bess_throughput,1.24,TWh per GW-yr,4 h x 365 cycles x 0.85 availability,mix
+bess_loss,0.12,share,Round-trip loss on stored energy,mix
+cc_coal,0.85,capacity credit,,mix
+cc_gas,0.9,capacity credit,,mix
+cc_nuclear,0.85,capacity credit,,mix
+cc_hydro,0.6,capacity credit,Storage-type hydro partially dispatchable at peak,mix
+cc_solar,0.05,capacity credit,Evening peak after sunset,mix
+cc_wind,0.15,capacity credit,,mix
+cc_bess,0.85,capacity credit,4-hour storage charged from daytime solar,mix
+coal_cap_national_gw,280.0,GW,CEA plans ~307 GW coal+lignite by 2034-35; some retirements by 2047,mix
+gas_cap_national_gw,60.0,GW,LNG import dependence limits gas build-out,mix
+nuclear_cap_national_gw,100.0,GW,Nuclear Energy Mission target: 100 GW by 2047,mix
+co2_now_mt,1204.5,Mt CO2,Power-sector emissions FY2023-24 (CEA),mix
+co2_cap_base_mt,1200.0,Mt CO2,Base: emissions held at today's level (peak and plateau consistent with Net Zero 2070),mix
+co2_cap_strict_mt,800.0,Mt CO2,Strict: one-third cut from today,mix
+co2_cap_relaxed_mt,1700.0,Mt CO2,Relaxed: draft NEP-like 66% non-fossil generation,mix
+tx_multiplier_base,3.0,x today,Inter-regional capacity 120 GW (Mar-2026) -> 360 GW by 2047,mix
+coal_existing_mar26_gw,221.9,GW,CEA installed capacity 31-03-2026 (region file; excl. lignite 6.6 GW),mix
+coal_pre2007_retire_gw,60.0,GW,Coal fleet was 71 GW in Mar-2007 (CEA); ~11 GW already retired -> ~60 GW turns 40+ by 2047 and retires,mix
+coal_under_constr_gw,39.5,GW,"MoP Rajya Sabha reply Feb-2026 (39,545 MW incl. 4,845 MW stressed)",mix
+coal_contracted_gw,22.9,GW,"MoP Rajya Sabha reply Feb-2026: contracts awarded 22,920 MW",mix
+lignite_2047_gw,5.0,GW,6.6 GW today; older units retire (assumption),mix
+coal_sunk_om,0.3,Rs crore/MW-yr,Fixed O&M + R&M/life-extension for committed coal (capital sunk),mix
+coal_min_load,0.4,share,CEA flexible-operation regulation: 55% today; 40% target technical minimum,mix
+gas_existing_gw,20.1,GW,CEA 31-03-2026,mix
+gas_sunk_om,0.15,Rs crore/MW-yr,Fixed O&M existing gas,mix
+psp_fixed,0.56,Rs crore/MW-yr,CEA PSP roadmap: Rs6 crore/MW; 8% over 40 yr (CRF 0.084) + 1% O&M,mix
+psp_hours,8.0,hours,Typical Indian PSP design 6-8 h,mix
+psp_eff,0.78,share,Round-trip efficiency,mix
+psp_potential_gw,267.0,GW,CEA Roadmap to 100 GW PSPs (Jan-2026): 267 GW assessed potential (31-12-2025),mix
+psp_existing_uc_gw,23.3,GW,7.43 operating + 15.87 under construction (PIB Aug-2026),mix
+bess_hours,4.0,hours,,mix
+bess_eff,0.88,share,Round-trip efficiency,mix
+storage_need_cea_2047_gw,476.0,GW,CEA PSP roadmap: all-India storage requirement 2046-47 (benchmark),mix
+solar_cap_2047_gw,1279.0,GW,Build-rate cap: CEA 2035-36 projection 509 GW + 11 yr x 70 GW/yr (record FY26: 44.6 GW; module mfg 172 GW/yr),mix
+wind_cap_2047_gw,375.0,GW,Build-rate cap: CEA 2035-36 projection 155 GW + 11 yr x 20 GW/yr (record FY26: 6.05 GW; turbine mfg 24 GW/yr),mix
+hydro_cap_2047_gw,111.0,GW,Build-rate cap: CEA 2035-36 projection 78 GW + 11 yr x 3 GW/yr (large hydro 51.4 GW in Mar-2026),mix

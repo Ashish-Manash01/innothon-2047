@@ -1,0 +1,365 @@
+<meta name="dash-one-writer">
+<style>
+#dash-root { --dash-gutter: clamp(12px, 3vw, 32px); }
+.ix { font-family: var(--font-anthropic-sans); color: var(--color-fg); max-width: 1280px; margin-inline: auto;
+  --ix-coal: #6e6e73; --ix-gas: #b07d3a; --ix-nuclear: #8a6cc9; --ix-hydro: #3a86c8; --ix-solar: #e0aa22; --ix-wind: #34a585; --ix-bess: #d0587e; }
+.ix-head { margin-bottom: var(--cds-gap-md); }
+.ix-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0 0 var(--cds-gap-xs); }
+.ix-take { font-size: var(--cds-font-size-body); color: var(--color-fg-muted); margin: 0; max-width: 70rem; line-height: 1.5; }
+.ix-take b, .ix-note b, .ix-warn b { color: var(--color-fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.ix-tabs { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); border-bottom: 1px solid var(--color-border-line); margin: var(--cds-gap-md) 0 var(--cds-gap-lg); }
+.ix-tab { font: inherit; font-size: var(--cds-font-size-body); background: none; border: 0; border-bottom: 2px solid transparent; color: var(--color-fg-muted);
+  padding: var(--cds-pad-sm) var(--cds-pad-md); cursor: pointer; }
+.ix-tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); }
+.ix-sec-title { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: var(--cds-gap-lg) 0 var(--cds-gap-sm); }
+.ix-intro { color: var(--color-fg-muted); font-size: var(--cds-font-size-body); margin: 0 0 var(--cds-gap-md); max-width: 70rem; line-height: 1.5; }
+.ix-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--cds-gap-md); }
+.ix-grid.wide { grid-template-columns: 1fr; }
+.ix-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; }
+.ix-card h3 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.ix-card .ix-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: var(--cds-gap-xs) 0 var(--cds-gap-sm); line-height: 1.45; }
+.ix-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr)); gap: var(--cds-gap-md); margin-bottom: var(--cds-gap-md); }
+.ix-kpi { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); }
+.ix-kpi .lab { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.ix-kpi .val { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; margin-top: 2px; }
+.ix-kpi .val small { font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-left: 4px; }
+.ix-kpi .sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: 2px; }
+.ix-controls { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); align-items: flex-end; background: var(--color-panel); border: 1px solid var(--color-border-line);
+  border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); margin-bottom: var(--cds-gap-md); }
+.ix-controls label { display: flex; flex-direction: column; gap: 4px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.ix-controls .dash-select { min-width: 9.5rem; }
+.ix-btn { font: inherit; font-size: var(--cds-font-size-caption); background: none; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius);
+  color: var(--color-fg); padding: var(--cds-pad-xs) var(--cds-pad-md); cursor: pointer; height: 2rem; }
+.ix-chart { position: relative; min-height: 290px; }
+.ix-chart.short { min-height: 230px; }
+.ix-chart.tall { min-height: 340px; }
+.ix-chart svg { display: block; overflow: visible; }
+.ix-chart text { font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-caption); fill: var(--color-fg-muted); }
+.ix-chart .grid line { stroke: var(--cds-chart-grid); }
+.ix-chart .axis path, .ix-chart .axis line { stroke: var(--cds-chart-axis); }
+.ix-chart .lbl { fill: var(--color-fg); }
+.ix-tip { position: absolute; pointer-events: none; z-index: 5; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius);
+  box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; }
+.ix-tip .hd { color: var(--cds-text-secondary); margin-bottom: 2px; }
+.ix-tip .ln { display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.ix-tip .ln span:last-child { margin-left: auto; padding-left: 10px; }
+.ix-sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.ix-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: var(--cds-gap-sm); }
+.ix-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.ix-legend .dash { width: 14px; height: 0; border-top: 2px dashed var(--color-fg-muted); }
+.ix-legend .line { width: 14px; height: 0; border-top: 2px solid; }
+.sw-coal { background: var(--ix-coal); } .sw-gas { background: var(--ix-gas); } .sw-nuclear { background: var(--ix-nuclear); }
+.sw-hydro { background: var(--ix-hydro); } .sw-solar { background: var(--ix-solar); } .sw-wind { background: var(--ix-wind); } .sw-bess { background: var(--ix-bess); }
+.ix-tablebox { max-height: 26rem; overflow: auto; }
+.ix-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.ix-table th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted);
+  border-bottom: 1px solid var(--color-border-line); padding: 6px 8px; white-space: nowrap; }
+.ix-table td { border-bottom: 1px solid var(--color-border-line); padding: 6px 8px; vertical-align: top; }
+.ix-table td.n, .ix-table th.n { text-align: right; }
+.ix-table td.wrap { white-space: normal; min-width: 14rem; }
+.ix-table tr.hl td { font-weight: 600; }
+.ix-pass { color: var(--color-ok); } .ix-fail { color: var(--color-bad); }
+.ix-search { font: inherit; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg);
+  color: var(--color-fg); padding: 6px 10px; width: min(100%, 22rem); margin-bottom: var(--cds-gap-sm); }
+.ix-warn { font-size: var(--cds-font-size-body); color: var(--color-warn); margin: 0 0 var(--cds-gap-sm); }
+.ix-details { margin-top: var(--cds-gap-lg); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.55; }
+.ix-details summary { cursor: pointer; color: var(--color-fg); font-size: var(--cds-font-size-body); }
+.ix-details dt { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); margin-top: var(--cds-gap-sm); }
+.ix-details dd { margin: 2px 0 0; }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="ix">
+  <header class="ix-head" id="top">
+    <h1 class="ix-title">India 2047 electricity forecast</h1>
+    <p class="ix-take">India will need about <b data-draw="t_total" data-source="demand_paths" data-field="gen_total" data-where="scenario=g65_bbase_evbase_dcbase_h2base&amp;fy_end=2047">—</b> TWh of electricity generation in FY2046-47
+      (Monte Carlo P10–P90: <b data-draw="t_p10" data-source="mc_fan" data-field="p10" data-where="fy_end=2047&amp;measure=gen_total">—</b>–<b data-draw="t_p90" data-source="mc_fan" data-field="p90" data-where="fy_end=2047&amp;measure=gen_total">—</b> TWh),
+      <b data-draw="t_mult" data-source="growth" data-field="multiple" data-where="scenario=g65_bbase_evbase_dcbase_h2base">—</b>× FY26. The least-cost regional mix that holds power-sector CO₂ at today's level is
+      <b data-draw="t_nf" data-source="mix_summary" data-field="non_fossil_pct" data-where="scenario=co21200_leastcost_rebase_dbase">—</b>% non-fossil.</p>
+  </header>
+
+  <nav class="ix-tabs" role="tablist" aria-label="Sections">
+    <button class="ix-tab" role="tab" data-tab="overview" aria-selected="true">Overview</button>
+    <button class="ix-tab" role="tab" data-tab="demand" aria-selected="false">Demand forecast</button>
+    <button class="ix-tab" role="tab" data-tab="mix" aria-selected="false">Generation mix</button>
+    <button class="ix-tab" role="tab" data-tab="pathway" aria-selected="false">Pathway to 2047</button>
+    <button class="ix-tab" role="tab" data-tab="validation" aria-selected="false">Validation</button>
+    <button class="ix-tab" role="tab" data-tab="assumptions" aria-selected="false">Assumptions &amp; sources</button>
+  </nav>
+
+  <!-- ============================== OVERVIEW ============================== -->
+  <section id="overview" data-tab-page="overview">
+    <div class="ix-kpis">
+      <div class="ix-kpi"><div class="lab">Total generation, FY2046-47</div><div class="val"><span data-draw="k_total" data-source="demand_paths" data-field="gen_total" data-where="scenario=g65_bbase_evbase_dcbase_h2base&amp;fy_end=2047">—</span><small>TWh</small></div><div class="sub">Base case, incl. green hydrogen</div></div>
+      <div class="ix-kpi"><div class="lab">Grid demand (excl. H₂)</div><div class="val"><span data-draw="k_grid" data-source="demand_paths" data-field="gen_grid" data-where="scenario=g65_bbase_evbase_dcbase_h2base&amp;fy_end=2047">—</span><small>TWh</small></div><div class="sub">Homes, industry, EVs, data centres</div></div>
+      <div class="ix-kpi"><div class="lab">Growth per year</div><div class="val"><span data-draw="k_cagr" data-source="growth" data-field="cagr_pct" data-where="scenario=g65_bbase_evbase_dcbase_h2base">—</span><small>%</small></div><div class="sub">FY26 actual → FY47, 21 years</div></div>
+      <div class="ix-kpi"><div class="lab">Non-fossil share, 2047</div><div class="val"><span data-draw="k_nf" data-source="mix_summary" data-field="non_fossil_pct" data-where="scenario=co21200_leastcost_rebase_dbase">—</span><small>%</small></div><div class="sub">FY26 actual: <span data-draw="k_nf26" data-source="pathway_nat" data-field="non_fossil_pct" data-where="fy_end=2026">—</span>%</div></div>
+      <div class="ix-kpi"><div class="lab">Power-sector CO₂, 2047</div><div class="val"><span data-draw="k_co2" data-source="mix_summary" data-field="co2_mt" data-where="scenario=co21200_leastcost_rebase_dbase">—</span><small>Mt</small></div><div class="sub">FY26: <span data-draw="k_co226" data-source="pathway_nat" data-field="co2_mt" data-where="fy_end=2026">—</span> Mt</div></div>
+      <div class="ix-kpi"><div class="lab">Average system cost</div><div class="val"><span data-draw="k_cost" data-source="mix_summary" data-field="cost_rs_per_kwh" data-where="scenario=co21200_leastcost_rebase_dbase">—</span><small>₹/kWh</small></div><div class="sub">2026 prices, generation + storage + wheeling</div></div>
+    </div>
+
+    <div class="ix-grid">
+      <div class="ix-card" id="card-fan">
+        <h3>Generation requirement: history and forecast</h3>
+        <p class="ix-note">Actual generation FY10–FY26 (CEA), then the base forecast with the Monte Carlo P10–P90 band (2,000 runs). The model's FY26 starting point is weather-smoothed.</p>
+        <div class="ix-chart" data-draw="ch_fan" data-source="history demand_paths mc_fan"></div>
+        <div class="ix-legend"><span><i class="ix-sw" style="background: var(--color-fg)"></i>Actual</span><span><i class="line" style="border-color: var(--ix-hydro)"></i>Base: total incl. H₂</span><span><i class="dash"></i>Base: grid only</span><span><i class="ix-sw" style="background: var(--ix-hydro); opacity: .2"></i>P10–P90</span></div>
+      </div>
+      <div class="ix-card" id="card-pathshare">
+        <h3>How the generation mix shifts, FY26 → 2047</h3>
+        <p class="ix-note">Share of generation by source. FY26 is actual; later years are the least-cost pathway with CO₂ peaking in the mid-2030s.</p>
+        <div class="ix-chart" data-draw="ch_pathshare" data-source="pathway_nat"></div>
+        <div class="ix-legend"><span><i class="ix-sw sw-coal"></i>Coal</span><span><i class="ix-sw sw-gas"></i>Gas</span><span><i class="ix-sw sw-nuclear"></i>Nuclear</span><span><i class="ix-sw sw-hydro"></i>Hydro</span><span><i class="ix-sw sw-solar"></i>Solar</span><span><i class="ix-sw sw-wind"></i>Wind</span></div>
+      </div>
+    </div>
+    <div class="ix-grid wide" style="margin-top: var(--cds-gap-md)">
+      <div class="ix-card" id="card-regbase">
+        <h3>Regional generation mix in 2047 (base)</h3>
+        <p class="ix-note">TWh generated in each CEA grid region. The North exports solar, the East imports, and the North-East is almost all hydro.</p>
+        <div class="ix-chart short" data-draw="ch_regbase" data-source="mix_regional"></div>
+        <div class="ix-legend"><span><i class="ix-sw sw-coal"></i>Coal</span><span><i class="ix-sw sw-gas"></i>Gas</span><span><i class="ix-sw sw-nuclear"></i>Nuclear</span><span><i class="ix-sw sw-hydro"></i>Hydro</span><span><i class="ix-sw sw-solar"></i>Solar</span><span><i class="ix-sw sw-wind"></i>Wind</span></div>
+      </div>
+    </div>
+    <details class="ix-details">
+      <summary>What these numbers mean</summary>
+      <dl>
+        <dt>Generation (TWh)</dt><dd>Electricity generated at power stations, the metric the challenge asks for. It is not installed capacity, and not consumption. Consumption-side demand is converted to generation with the observed ratio (1.077 in FY22–26, falling to 1.06 by 2047 as solar and wind have low auxiliary use).</dd>
+        <dt>Grid demand vs total</dt><dd>Total adds electricity for green-hydrogen electrolysers (12 Mt at 48 kWh/kg in the base), which is flexible and mostly fed by dedicated renewables.</dd>
+        <dt>FY2046-47 ("2047")</dt><dd>India's financial year ending March 2047, the 100th year of independence.</dd>
+        <dt>Least-cost mix</dt><dd>A linear programme chooses capacity and dispatch by region in 12 time slices (4 seasons × day/evening/night), subject to resource limits, build-rate limits, transmission, a 15% reserve margin, coal minimum load and a CO₂ cap.</dd>
+        <dt>Left out</dt><dd>Bio-power and small hydro (about 2% of generation) are not modelled separately. Rooftop solar is part of solar. Prices are 2026 rupees.</dd>
+      </dl>
+    </details>
+  </section>
+
+  <!-- ============================== DEMAND ============================== -->
+  <section id="demand" data-tab-page="demand" hidden>
+    <p class="ix-intro">Every combination below is a full run of the demand model: a state-level panel regression (income elasticity <span data-draw="d_b" data-source="panel" data-field="income_elasticity_b" data-where="spec=1 Main (state FE, clustered SE)">—</span>, 332 state-years) projected with UN population, urbanisation and GDP, plus EVs, data centres and green hydrogen.</p>
+    <div class="ix-controls" id="demand-controls">
+      <label>GDP growth (real)<select class="dash-select" data-param="gdp" aria-label="GDP growth">
+        <option value="5.5">5.5% / yr</option><option value="6.0">6.0% / yr</option><option value="6.5">6.5% / yr (base)</option><option value="7.0">7.0% / yr</option><option value="7.5">7.5% / yr</option></select></label>
+      <label>Income elasticity<select class="dash-select" data-param="el" aria-label="Income elasticity">
+        <option value="low">0.62 (low)</option><option value="base">0.689 (estimated)</option><option value="high">0.85 (high)</option></select></label>
+      <label>Electric vehicles<select class="dash-select" data-param="ev" aria-label="Electric vehicles">
+        <option value="low">Slow adoption</option><option value="base">Base adoption</option><option value="high">Fast adoption</option></select></label>
+      <label>Data centres<select class="dash-select" data-param="dc" aria-label="Data centres">
+        <option value="low">120 TWh by 2047</option><option value="base">250 TWh by 2047</option><option value="high">380 TWh by 2047</option></select></label>
+      <label>Green hydrogen<select class="dash-select" data-param="h2" aria-label="Green hydrogen">
+        <option value="low">5 Mt / yr</option><option value="base">12 Mt / yr</option><option value="high">25 Mt / yr</option></select></label>
+      <button class="ix-btn" data-reset="demand">Reset to base</button>
+    </div>
+    <div class="ix-kpis">
+      <div class="ix-kpi"><div class="lab">Total generation, FY2046-47</div><div class="val"><span data-draw="dk_total" data-source="demand_paths" data-field="gen_total">—</span><small>TWh</small></div><div class="sub">Change vs base: <span data-draw="dk_delta" data-source="delta" data-field="delta_twh">—</span> TWh</div></div>
+      <div class="ix-kpi"><div class="lab">Growth per year</div><div class="val"><span data-draw="dk_cagr" data-source="growth" data-field="cagr_pct">—</span><small>%</small></div><div class="sub"><span data-draw="dk_mult" data-source="growth" data-field="multiple">—</span>× FY26 actual</div></div>
+      <div class="ix-kpi"><div class="lab">Grid demand</div><div class="val"><span data-draw="dk_grid" data-source="demand_paths" data-field="gen_grid">—</span><small>TWh</small></div><div class="sub">of which EVs + data centres: <span data-draw="dk_evdc" data-source="demand_paths" data-field="gen_ev_dc">—</span></div></div>
+      <div class="ix-kpi"><div class="lab">Green-hydrogen electricity</div><div class="val"><span data-draw="dk_h2" data-source="demand_paths" data-field="gen_h2">—</span><small>TWh</small></div><div class="sub">Flexible electrolyser load</div></div>
+    </div>
+    <div class="ix-grid">
+      <div class="ix-card" id="card-dpath">
+        <h3>Selected scenario vs base</h3>
+        <p class="ix-note">Total generation including green hydrogen. The shaded band is the Monte Carlo P10–P90 that varies all drivers at once.</p>
+        <div class="ix-chart" data-draw="ch_dpath" data-source="history demand_paths mc_fan"></div>
+        <div class="ix-legend"><span><i class="ix-sw" style="background: var(--color-fg)"></i>Actual</span><span><i class="line" style="border-color: var(--ix-bess)"></i>Selected</span><span><i class="dash"></i>Base</span><span><i class="ix-sw" style="background: var(--ix-hydro); opacity: .2"></i>P10–P90</span></div>
+      </div>
+      <div class="ix-card" id="card-decomp">
+        <h3>What the demand is made of</h3>
+        <p class="ix-note">Organic demand (population × income-driven use per person) and the new loads that history cannot show, for the selected scenario.</p>
+        <div class="ix-chart" data-draw="ch_decomp" data-source="demand_paths"></div>
+        <div class="ix-legend"><span><i class="ix-sw sw-hydro"></i>Organic demand</span><span><i class="ix-sw sw-bess"></i>EVs + data centres</span><span><i class="ix-sw sw-wind"></i>Green hydrogen</span></div>
+      </div>
+      <div class="ix-card" id="card-dreg">
+        <h3>Demand by region, selected scenario</h3>
+        <p class="ix-note">Generation requirement by CEA region at each milestone year, built up from 36 states and union territories.</p>
+        <div class="ix-chart" data-draw="ch_dreg" data-source="demand_regional"></div>
+        <div class="ix-legend"><span><i class="ix-sw" style="background: var(--cds-chart-muted)"></i>FY30</span><span><i class="ix-sw" style="background: var(--ix-gas)"></i>FY35</span><span><i class="ix-sw" style="background: var(--ix-hydro)"></i>FY40</span><span><i class="ix-sw" style="background: var(--ix-bess)"></i>FY47</span></div>
+      </div>
+      <div class="ix-card" id="card-tornado">
+        <h3>What moves the 2047 number most</h3>
+        <p class="ix-note">Change in 2047 total generation when one driver moves to its low or high value and the rest stay at base.</p>
+        <div class="ix-chart" data-draw="ch_tornado" data-source="tornado"></div>
+        <div class="ix-legend"><span><i class="ix-sw" style="background: var(--cds-chart-muted)"></i>Low value</span><span><i class="ix-sw" style="background: var(--ix-hydro)"></i>High value</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== MIX ============================== -->
+  <section id="mix" data-tab-page="mix" hidden>
+    <p class="ix-intro">Each setting below is a separate solve of the least-cost regional mix model for FY2046-47 (135 runs). Solar and wind are limited by how fast India can build them; nuclear and storage are chosen by cost under the CO₂ cap.</p>
+    <div class="ix-controls" id="mix-controls">
+      <label>Power-sector CO₂ cap<select class="dash-select" data-param="co2" aria-label="CO2 cap">
+        <option value="800">0.80 Gt (deep cut)</option><option value="1000">1.00 Gt</option><option value="1200">1.20 Gt (today's level, base)</option><option value="1450">1.45 Gt</option><option value="1700">1.70 Gt (draft-NEP-like)</option></select></label>
+      <label>Nuclear policy<select class="dash-select" data-param="nuc" aria-label="Nuclear policy">
+        <option value="leastcost">Least cost, up to 100 GW (base)</option><option value="mission100">Mission: exactly 100 GW</option><option value="delay50">Delayed: at most 50 GW</option></select></label>
+      <label>Solar &amp; wind build speed<select class="dash-select" data-param="re" aria-label="Renewable build speed">
+        <option value="slow">25% slower</option><option value="base">Base (1,279 GW solar, 375 GW wind)</option><option value="fast">25% faster</option></select></label>
+      <label>Demand<select class="dash-select" data-param="dem" aria-label="Demand level">
+        <option value="P10">Low (Monte Carlo P10)</option><option value="base">Base</option><option value="P90">High (Monte Carlo P90)</option></select></label>
+      <button class="ix-btn" data-reset="mix">Reset to base</button>
+    </div>
+    <span data-draw="m_warnctl" data-source="mix_summary"></span>
+    <p class="ix-warn" data-warn="unserved" hidden>Not deliverable within the build limits: <b data-draw="mw_uns" data-source="mix_summary" data-field="unserved_twh">—</b> TWh of demand cannot be served. Faster building is needed.</p>
+    <p class="ix-warn" data-warn="co2" hidden>The CO₂ cap cannot be met with this setting: emissions exceed it by <b data-draw="mw_co2" data-source="mix_summary" data-field="co2_over_cap_mt">—</b> Mt.</p>
+    <div class="ix-kpis">
+      <div class="ix-kpi"><div class="lab">Non-fossil share</div><div class="val"><span data-draw="mk_nf" data-source="mix_summary" data-field="non_fossil_pct">—</span><small>%</small></div><div class="sub">of <span data-draw="mk_tot" data-source="mix_summary" data-field="total_twh">—</span> TWh generated</div></div>
+      <div class="ix-kpi"><div class="lab">Power-sector CO₂</div><div class="val"><span data-draw="mk_co2" data-source="mix_summary" data-field="co2_mt">—</span><small>Mt</small></div><div class="sub">Coal 0.96, gas 0.40 t/MWh</div></div>
+      <div class="ix-kpi"><div class="lab">Average system cost</div><div class="val"><span data-draw="mk_cost" data-source="mix_summary" data-field="cost_rs_per_kwh">—</span><small>₹/kWh</small></div><div class="sub">2026 prices</div></div>
+      <div class="ix-kpi"><div class="lab">Implied carbon price</div><div class="val"><span data-draw="mk_cp" data-source="mix_summary" data-field="co2_shadow_rs_per_t">—</span><small>₹/t CO₂</small></div><div class="sub">Cost of the last tonne avoided</div></div>
+      <div class="ix-kpi"><div class="lab">Storage built</div><div class="val"><span data-draw="mk_bess" data-source="mix_summary" data-field="bess_gw">—</span><small>GW batteries</small></div><div class="sub">+ <span data-draw="mk_psp" data-source="mix_summary" data-field="psp_gw">—</span> GW pumped hydro</div></div>
+    </div>
+    <div class="ix-grid">
+      <div class="ix-card" id="card-mnat">
+        <h3>National mix, FY2046-47</h3>
+        <p class="ix-note">Share of generation by source for the selected setting.</p>
+        <div class="ix-chart short" data-draw="ch_mnat" data-source="mix_nat"></div>
+      </div>
+      <div class="ix-card" id="card-mnet">
+        <h3>Who exports, who imports</h3>
+        <p class="ix-note">Each region's generation minus its own demand (TWh). Positive regions supply their neighbours over the inter-regional corridors.</p>
+        <div class="ix-chart short" data-draw="ch_mnet" data-source="mix_summary"></div>
+      </div>
+    </div>
+    <div class="ix-grid wide" style="margin-top: var(--cds-gap-md)">
+      <div class="ix-card" id="card-mreg">
+        <h3>Regional mix, FY2046-47</h3>
+        <p class="ix-note">TWh generated in each region by source.</p>
+        <div class="ix-chart short" data-draw="ch_mreg" data-source="mix_regional"></div>
+        <div class="ix-legend"><span><i class="ix-sw sw-coal"></i>Coal</span><span><i class="ix-sw sw-gas"></i>Gas</span><span><i class="ix-sw sw-nuclear"></i>Nuclear</span><span><i class="ix-sw sw-hydro"></i>Hydro</span><span><i class="ix-sw sw-solar"></i>Solar</span><span><i class="ix-sw sw-wind"></i>Wind</span></div>
+      </div>
+    </div>
+    <div class="ix-grid" style="margin-top: var(--cds-gap-md)">
+      <div class="ix-card" id="card-mshare">
+        <h3>Regional mix shares (%)</h3>
+        <p class="ix-note">Share of each region's own generation.</p>
+        <div class="ix-tablebox"><table class="ix-table" data-source="mix_reg" data-row-key="scenario,region">
+          <thead><tr><th data-field="region">Region</th><th class="n" data-field="total_twh">TWh</th><th class="n" data-field="coal_pct">Coal</th><th class="n" data-field="gas_pct">Gas</th><th class="n" data-field="nuclear_pct">Nuclear</th><th class="n" data-field="hydro_pct">Hydro</th><th class="n" data-field="solar_pct">Solar</th><th class="n" data-field="wind_pct">Wind</th></tr></thead>
+          <tbody data-draw="tb_mshare"></tbody></table></div>
+      </div>
+      <div class="ix-card" id="card-mcap">
+        <h3>Installed capacity needed (GW)</h3>
+        <p class="ix-note">Capacity by region and source for the selected setting, including the committed coal, hydro and nuclear fleet.</p>
+        <div class="ix-tablebox"><table class="ix-table" data-source="mix_reg" data-row-key="scenario,region">
+          <thead><tr><th data-field="region">Region</th><th class="n" data-field="coal_gw">Coal</th><th class="n" data-field="gas_gw">Gas</th><th class="n" data-field="nuclear_gw">Nuclear</th><th class="n" data-field="hydro_gw">Hydro</th><th class="n" data-field="solar_gw">Solar</th><th class="n" data-field="wind_gw">Wind</th></tr></thead>
+          <tbody data-draw="tb_mcap"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== PATHWAY ============================== -->
+  <section id="pathway" data-tab-page="pathway" hidden>
+    <p class="ix-intro">The same model solved at FY30, FY35, FY40 and FY47 with each year's demand, committed fleet, build limits (anchored to CEA's 2035-36 projection), transmission and a CO₂ cap that peaks in the mid-2030s and then declines.</p>
+    <div class="ix-grid">
+      <div class="ix-card" id="card-ptwh">
+        <h3>Generation by source (TWh)</h3>
+        <p class="ix-note">FY26 is actual (CEA); later years are model results.</p>
+        <div class="ix-chart" data-draw="ch_ptwh" data-source="pathway_nat"></div>
+        <div class="ix-legend"><span><i class="ix-sw sw-coal"></i>Coal</span><span><i class="ix-sw sw-gas"></i>Gas</span><span><i class="ix-sw sw-nuclear"></i>Nuclear</span><span><i class="ix-sw sw-hydro"></i>Hydro</span><span><i class="ix-sw sw-solar"></i>Solar</span><span><i class="ix-sw sw-wind"></i>Wind</span></div>
+      </div>
+      <div class="ix-card" id="card-pcap">
+        <h3>Installed capacity (GW)</h3>
+        <p class="ix-note">Solar and wind follow the build limits; coal plateaus as old units retire; storage scales with solar.</p>
+        <div class="ix-chart" data-draw="ch_pcap" data-source="pathway_nat"></div>
+        <div class="ix-legend"><span><i class="ix-sw sw-coal"></i>Coal</span><span><i class="ix-sw sw-nuclear"></i>Nuclear</span><span><i class="ix-sw sw-hydro"></i>Hydro</span><span><i class="ix-sw sw-solar"></i>Solar</span><span><i class="ix-sw sw-wind"></i>Wind</span><span><i class="ix-sw sw-bess"></i>Batteries</span></div>
+      </div>
+      <div class="ix-card" id="card-pco2">
+        <h3>Power-sector CO₂ (Mt)</h3>
+        <p class="ix-note">Model emissions against the cap. CEA's draft NEP projects about 1,180 Mt for FY32.</p>
+        <div class="ix-chart short" data-draw="ch_pco2" data-source="pathway_nat"></div>
+        <div class="ix-legend"><span><i class="line" style="border-color: var(--color-fg)"></i>Emissions</span><span><i class="dash"></i>Cap</span></div>
+      </div>
+      <div class="ix-card" id="card-ptable">
+        <h3>Milestones</h3>
+        <p class="ix-note">Headline numbers at each milestone year.</p>
+        <div class="ix-tablebox"><table class="ix-table" data-source="pathway_nat" data-row-key="fy_end">
+          <thead><tr><th data-field="fy_end">FY end</th><th data-field="kind">Basis</th><th class="n" data-field="total_twh">TWh</th><th class="n" data-field="non_fossil_pct">Non-fossil %</th><th class="n" data-field="co2_mt">CO₂ Mt</th><th class="n" data-field="solar_gw">Solar GW</th><th class="n" data-field="wind_gw">Wind GW</th><th class="n" data-field="nuclear_gw">Nuclear GW</th><th class="n" data-field="coal_gw">Coal GW</th></tr></thead>
+          <tbody data-draw="tb_path"></tbody></table></div>
+      </div>
+    </div>
+    <div class="ix-grid wide" style="margin-top: var(--cds-gap-md)">
+      <div class="ix-card" id="card-preg">
+        <h3>Regional mix by year</h3>
+        <p class="ix-note">TWh generated in each region. Pick a year:</p>
+        <div class="ix-controls" style="margin: 0 0 var(--cds-gap-sm); padding: 0; border: 0; background: none">
+          <label>Year<select class="dash-select" data-param="year" aria-label="Year">
+            <option value="2026">FY26 (actual)</option><option value="2030">FY30</option><option value="2035">FY35</option><option value="2040">FY40</option><option value="2047">FY47</option></select></label>
+        </div>
+        <div class="ix-chart short" data-draw="ch_preg" data-source="pathway_reg"></div>
+        <div class="ix-legend"><span><i class="ix-sw sw-coal"></i>Coal</span><span><i class="ix-sw sw-gas"></i>Gas</span><span><i class="ix-sw sw-nuclear"></i>Nuclear</span><span><i class="ix-sw sw-hydro"></i>Hydro</span><span><i class="ix-sw sw-solar"></i>Solar</span><span><i class="ix-sw sw-wind"></i>Wind</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== VALIDATION ============================== -->
+  <section id="validation" data-tab-page="validation" hidden>
+    <p class="ix-intro">Before trusting 2047, the mix model was run on today's fleet and today's demand (FY26 backcast), every solution was re-checked independently, and the results were compared with official and published projections.</p>
+    <div class="ix-grid">
+      <div class="ix-card" id="card-back">
+        <h3>Backcast: model vs actual FY26 (national)</h3>
+        <p class="ix-note">TWh by source when the model is given the FY26 fleet and demand. Gas runs on contracts in reality, which a least-cost model does not see.</p>
+        <div class="ix-chart short" data-draw="ch_back" data-source="backcast"></div>
+        <div class="ix-legend"><span><i class="ix-sw" style="background: var(--cds-chart-muted)"></i>Actual (CEA)</span><span><i class="ix-sw" style="background: var(--ix-hydro)"></i>Model</span></div>
+      </div>
+      <div class="ix-card" id="card-backreg">
+        <h3>Backcast: coal by region (TWh)</h3>
+        <p class="ix-note">Regional allocation error is about 6% of national coal after calibrating plant-cost spread.</p>
+        <div class="ix-tablebox"><table class="ix-table" data-source="backcast" data-row-key="region,source">
+          <thead><tr><th data-field="region">Region</th><th class="n" data-field="actual_twh">Actual</th><th class="n" data-field="model_twh">Model</th><th class="n" data-field="diff_twh">Difference</th></tr></thead>
+          <tbody data-draw="tb_back"></tbody></table></div>
+      </div>
+      <div class="ix-card" id="card-bench">
+        <h3>Against official and published numbers</h3>
+        <p class="ix-note">Our estimates beside CEA, the National Electricity Plan, government targets and published 2047 studies.</p>
+        <div class="ix-tablebox"><table class="ix-table" data-source="benchmarks" data-row-key="metric,estimate">
+          <thead><tr><th data-field="metric">Metric</th><th data-field="estimate">Estimate</th><th class="n" data-field="value">Value</th><th data-field="source">Source</th></tr></thead>
+          <tbody data-draw="tb_bench"></tbody></table></div>
+      </div>
+      <div class="ix-card" id="card-checks">
+        <h3>Independent checks on the 2047 solution</h3>
+        <p class="ix-note">Each recomputed from the solved numbers, not taken from the solver.</p>
+        <div class="ix-tablebox"><table class="ix-table" data-source="checks" data-row-key="check">
+          <thead><tr><th data-field="check">Check</th><th data-field="pass">Result</th><th data-field="detail">Detail</th></tr></thead>
+          <tbody data-draw="tb_checks"></tbody></table></div>
+      </div>
+      <div class="ix-card" id="card-panel">
+        <h3>Is the income elasticity robust?</h3>
+        <p class="ix-note">The key demand coefficient re-estimated four ways. The realised FY18→FY26 elasticity was 0.694.</p>
+        <div class="ix-tablebox"><table class="ix-table" data-source="panel" data-row-key="spec">
+          <thead><tr><th data-field="spec">Specification</th><th class="n" data-field="income_elasticity_b">Elasticity</th><th class="n" data-field="se_b">Std. error</th><th class="n" data-field="urban_semi_elast_c">Urban coef.</th><th class="n" data-field="n">Obs.</th></tr></thead>
+          <tbody data-draw="tb_panel"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== ASSUMPTIONS ============================== -->
+  <section id="assumptions" data-tab-page="assumptions" hidden>
+    <p class="ix-intro">Every assumption the models use, with its basis, and every data source. All model code and data are reproducible from the project repository.</p>
+    <div class="ix-grid wide">
+      <div class="ix-card" id="card-assump">
+        <h3>Assumptions</h3>
+        <p class="ix-note">Search by name, model or basis.</p>
+        <input class="ix-search" type="search" placeholder="Search assumptions" aria-label="Search assumptions">
+        <div class="ix-tablebox"><table class="ix-table" data-source="assumptions" data-row-key="item">
+          <thead><tr><th data-field="item">Assumption</th><th class="n" data-field="value">Value</th><th data-field="unit">Unit</th><th data-field="basis">Basis</th><th data-field="model">Model</th></tr></thead>
+          <tbody data-draw="tb_assump"></tbody></table></div>
+      </div>
+    </div>
+    <div class="ix-grid" style="margin-top: var(--cds-gap-md)">
+      <div class="ix-card" id="card-res">
+        <h3>Resource potential vs what 2047 uses (GW)</h3>
+        <p class="ix-note">Solar (NISE, AC), wind at 150 m (NIWE) and hydro (CEA) potential beside the base plan's capacity.</p>
+        <div class="ix-tablebox"><table class="ix-table" data-source="resources" data-row-key="region">
+          <thead><tr><th data-field="region">Region</th><th class="n" data-field="solar_potential_gw">Solar pot.</th><th class="n" data-field="solar_used_2047_gw">Used</th><th class="n" data-field="wind_potential_gw">Wind pot.</th><th class="n" data-field="wind_used_2047_gw">Used</th><th class="n" data-field="hydro_potential_gw">Hydro pot.</th><th class="n" data-field="hydro_used_2047_gw">Used</th></tr></thead>
+          <tbody data-draw="tb_res"></tbody></table></div>
+      </div>
+      <div class="ix-card" id="card-src">
+        <h3>Data sources</h3>
+        <p class="ix-note">Public sources used before the official data release.</p>
+        <div class="ix-tablebox"><table class="ix-table" data-source="sources_list" data-row-key="source">
+          <thead><tr><th data-field="source">Source</th><th data-field="used_for">Used for</th><th data-field="link">Link</th></tr></thead>
+          <tbody data-draw="tb_src"></tbody></table></div>
+      </div>
+    </div>
+    <p class="ix-intro" style="margin-top: var(--cds-gap-lg)">AI tools: this work was built with help from Claude (Anthropic) for data gathering, coding, model building and drafting, as the competition terms require us to acknowledge. All numbers come from the cited sources and the team's own model runs.</p>
+  </section>
+</div>
+<script src="app.js"></script>

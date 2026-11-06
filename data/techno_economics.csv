@@ -1,0 +1,7 @@
+source,cf_fy26_derived,cf_2047_assumed,lcoe_new_low_rs_kwh,lcoe_new_high_rs_kwh,co2_t_per_mwh,firm_dispatchable,notes
+coal,0.64,0.55,5.0,6.3,0.96,True,MoP: new coal Rs5-6/kWh; 2025 TBCB tariffs Rs5.38-6.30. 2047 CF falls as coal shifts to flexible/backup role.
+gas,0.133,0.2,7.0,10.0,0.4,True,No recent new-build tariff. Estimate: CCGT heat rate ~7.95 MJ/kWh x LNG $10-12/MMBtu ~ Rs6.5-7.5 fuel + fixed cost at low PLF. Peaking/balancing role.
+nuclear,0.743,0.8,6.0,7.0,0.0,True,MoP: new nuclear Rs6-7/kWh. PHWR-700 fleet; 80% CF achievable (Kakrapar/Rawatbhata history).
+hydro,0.37,0.38,5.0,6.0,0.0,True,MoP: new hydro Rs5-6/kWh. CF depends on monsoon; FY26 was a strong hydro year.
+solar,0.156,0.21,2.5,3.0,0.0,False,MoP: new solar Rs2.5-3.0/kWh. 2047 CF assumes trackers/bifacial (utility plants 20-24%). Solar+4h BESS auctions Rs2.9-3.5 (2025).
+wind,0.23,0.3,3.0,4.0,0.0,False,MoP: new wind Rs3-4/kWh. NIWE 150 m potential counts only sites with CUF >25%; hub-height repowering raises fleet CF.

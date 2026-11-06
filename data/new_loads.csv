@@ -1,0 +1,22 @@
+load,param,low,base,high,unit,source_or_basis
+ev,two_wheelers_stock_2047,300,350,400,million,Assumption: ~1 per 4.8 people in 2047 (vs ~230 mn registered 2W today)
+ev,two_wheelers_ev_share,0.6,0.8,0.95,share,Assumption; 2W electrification fastest (EV30@30 trajectory)
+ev,two_wheelers_kwh_per_vehicle,250,300,350,kWh/yr,~10000 km/yr at ~3 kWh/100 km
+ev,cars_stock_2047,80,100,130,million,Assumption: car ownership ~60-80 per 1000 people
+ev,cars_ev_share,0.3,0.5,0.75,share,Assumption
+ev,cars_kwh_per_vehicle,1700,2000,2300,kWh/yr,~12000 km/yr at ~16 kWh/100 km
+ev,three_wheelers_stock_2047,8,10,12,million,Assumption
+ev,three_wheelers_ev_share,0.8,0.9,1.0,share,E-rickshaws already majority of 3W sales
+ev,three_wheelers_kwh_per_vehicle,2500,3000,3500,kWh/yr,~30000 km/yr at ~10 kWh/100 km
+ev,buses_stock_2047,1.6,2.0,2.4,million,Assumption
+ev,buses_ev_share,0.5,0.7,0.9,share,PM e-Bus Sewa / FAME trajectory
+ev,buses_kwh_per_vehicle,60000,70000,80000,kWh/yr,~60000 km/yr at ~1.2 kWh/km
+ev,trucks_stock_2047,12,15,18,million,Assumption
+ev,trucks_ev_share,0.1,0.25,0.45,share,Heavy trucking may shift partly to hydrogen
+ev,trucks_kwh_per_vehicle,30000,40000,50000,kWh/yr,Mixed LCV/HCV fleet average
+ev,check_2030_twh,,25-38,,TWh,IEA STEPS ~25 TWh (2030); IESA ~38 TWh (FY2031-32) - our path must pass near these
+datacentre,consumption_2047_twh,120,250,380,TWh,Wood Mackenzie (Jul 2026): 10 TWh (2025) -> 191 TWh (2040); base extends at ~4%/yr after 2040
+datacentre,embedded_in_history_twh_2025,,10,,TWh,Already inside FY25-26 requirement; only growth above the model's own trend is added
+hydrogen,green_h2_2047_mt,5,12,25,Mt/yr,NGHM 5 Mt by 2030 (lagging); NITI-RMI 29 Mt H2 demand by 2050 (94% green); reported govt ambition 25 Mt by 2047
+hydrogen,electrolysis_kwh_per_kg,45,48,52,kWh/kg,IRADe: 5 Mt needs 257 TWh (=51 kWh/kg) in 2030; efficiency improves to 2047
+hydrogen,gen_over_consumption,,1.02,,ratio,Mostly dedicated/captive RE: minimal network losses

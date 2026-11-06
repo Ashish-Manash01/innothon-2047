@@ -1,0 +1,63 @@
+{
+ "v": 4,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-06T14:30:00Z"
+ },
+ "lists": "css",
+ "title": "India 2047 Electricity Forecast — Defensibility Deck",
+ "cover": "cover",
+ "order": [
+  "cover",
+  "answer",
+  "approach",
+  "demand-model",
+  "demand-forecast",
+  "new-loads",
+  "uncertainty",
+  "regional-demand",
+  "mix-model",
+  "national-mix",
+  "regional-mix",
+  "pathway",
+  "tradeoffs",
+  "validation",
+  "screening",
+  "implications",
+  "limitations",
+  "dashboard"
+ ],
+ "sections": {
+  "s1": {
+   "description": "The answer",
+   "start": "cover"
+  },
+  "s2": {
+   "description": "How demand was forecast",
+   "start": "approach"
+  },
+  "s3": {
+   "description": "How the mix was chosen and what it is",
+   "start": "mix-model"
+  },
+  "s4": {
+   "description": "Why it can be trusted",
+   "start": "tradeoffs"
+  },
+  "s5": {
+   "description": "What it means and how to explore it",
+   "start": "implications"
+  }
+ },
+ "faces": {
+  "source-serif-4": {
+   "family": "Source Serif 4",
+   "href": "https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400..700&display=swap"
+  },
+  "ibm-plex-sans": {
+   "family": "IBM Plex Sans",
+   "href": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&display=swap"
+  }
+ },
+ "designSystems": []
+}

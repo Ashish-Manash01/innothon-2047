@@ -1,0 +1,41 @@
+                                                                       check  pass                                                                                       detail
+0                Energy balance met in all 60 region-slices (min slack, TWh)  True                                                                                         -0.0
+1                                                      Unserved energy (TWh)  True                                                                                          0.0
+2      National: gen + Bhutan - losses - demand >= 0 (TWh curtailed/spilled)  True                                                                                          0.0
+3                           National capacity factors within physical limits  True  {'coal': 0.617, 'gas': 0.151, 'nuclear': 0.8, 'hydro': 0.376, 'solar': 0.214, 'wind': 0.32}
+4                                 Resource potentials & build caps respected  True                                                                                             
+5                          Committed fleet retained (coal/gas/hydro/nuclear)  True                                                                                        229.3
+6                            CO2 recomputed <= cap + reported overshoot (Mt)  True                                                                                         1200
+7   Firm capacity / (peak x1.15) by region (<1 means relies on firm imports)  True                                                                 [1.6, 1.0, 0.65, 0.64, 2.06]
+8                              National firm capacity >= national peak x1.15  True                                                                                901 vs 854 GW
+9                               Coal minimum-load (40% of evening) respected  True                                                                                             
+10                                  Storage: discharge = efficiency x charge  True                                                                                             
+11                                 Electrolyser energy delivered = H2 demand  True                                                                                        587.6
+12                                 Corridor flows <= limit (max utilisation)  True                                                                                          1.0
+!! Demand P90 failed:
+                                                check   pass  detail
+0  Energy balance met in all 60 region-slices (mi...  False -42.951
+1                              Unserved energy (TWh)  False   84.76
+
+                      scenario  total_gen_twh  coal_%  gas_%  nuclear_%  hydro_%  solar_%  wind_%  non_fossil_%  co2_mt  coal_gw  gas_gw  nuclear_gw  hydro_gw  solar_gw  wind_gw  bess_gw  psp_gw  cost_rs_per_kwh  co2_shadow_rs_per_t  co2_over_cap_mt  unserved_twh
+                         Base           5658    21.9    0.5       10.3      6.5     42.3    18.6          77.6    1200      229      20          83       111      1279      375      480      23             3.69                 2652                0           0.0
+          Strict CO2 (0.8 Gt)           5667    11.7    8.3       12.4      6.4     42.6    18.5          80.0     823      229      60         100       111      1279      375      528      23             4.13                20000               23           0.0
+         Relaxed CO2 (1.7 Gt)           5659    30.9    0.7        2.9      4.8     42.1    18.6          68.4    1696      280      20          23        79      1279      375      471      23             3.54                    0                0           0.0
+     Nuclear Mission (100 GW)           5656    22.0    0.3       12.4      4.8     42.0    18.6          77.7    1200      229      20         100        79      1279      375      473      23             3.71                 1337                0           0.0
+      Nuclear delay (<=50 GW)           5657    19.2    7.0        6.2      6.5     42.6    18.6          73.8    1200      229      60          50       111      1279      375      437      23             3.83                 8421                0           0.0
+         Transmission x2 only           5658    21.9    0.5       10.4      6.5     42.2    18.6          77.6    1200      229      20          84       111      1279      375      478      23             3.70                 2603                0           0.0
+              Transmission x5           5659    21.9    0.5       10.3      6.5     42.3    18.6          77.6    1200      229      20          83       111      1279      375      481      23             3.69                 2619                0           0.0
+            Storage cost +50%           5653    21.9    0.5       10.6      6.5     41.9    18.6          77.6    1200      229      20          85       111      1279      375      444      23             3.85                 2728                0           0.0
+              Solar cost +30%           5658    21.9    0.5       10.3      6.5     42.3    18.6          77.6    1200      229      20          83       111      1279      375      480      23             4.04                 2652                0           0.0
+       Faster RE build (+25%)           5689    22.0    0.0        2.9      4.7     47.3    23.1          78.0    1200      229      20          23        78      1459      469      603      23             3.47                  586                0           0.0
+       Slower RE build (-25%)           5622    26.0    8.4       12.5      6.5     32.6    14.0          65.6    1592      260      60         100       111       959      281      371      23             4.18                20000              392           0.0
+                   Demand P10           5117    24.3    0.3        3.2      5.3     46.4    20.5          75.4    1200      229      20          23        79      1279      375      522      23             3.46                 1010                0           0.0
+                   Demand P90           7091    29.4    6.7        9.9      5.2     34.1    14.8          63.9    2191      280      60         100       111      1279      375      542      23             4.10                20000              991          84.8
+Demand P90 + build caps x1.23           7190    19.1    6.6        9.7      5.5     41.0    18.0          74.3    1510      241      60         100       122      1573      461      591      23             3.99                20000              310           0.0
+
+                generation_twh  demand_twh  net_export_twh
+Northern               1679.0      1475.0           204.0
+Western                1872.0      1807.0            66.0
+Southern               1548.0      1535.0            14.0
+Eastern                 441.0       666.0          -225.0
+North-Eastern           117.0        70.0            47.0

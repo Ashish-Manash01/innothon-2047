@@ -1,0 +1,21 @@
+test,result,detail
+Base year = smoothed FY26 (states),PASS,1751.35 vs 1751.35 TWh
+Zero GDP growth -> per-capita demand does not rise,PASS,per-capita kWh 1198 -> 1099
+Zero new loads -> EV/DC adder ~0,PASS,0.00 TWh
+Elasticity applied ~ b in year 1 (state-level),PASS,see per-state check below
+Per-state year-1 elasticity = b_t,PASS,"expected 0.6810, got [0.681 0.681 0.681]"
+H2 units: 12 Mt x 48 kWh/kg = 576 TWh consumption,PASS,576.0
+"Population FY2047 = scenario 1,665 mn",PASS,1665.0
+Population FY2026 = UN July 2025,PASS,1463.9
+Sum of entities = national organic (all years),PASS,max gap 0.0000 TWh
+Sum of state GSDP grows at national GDP rate,PASS,growth 0.0650
+Regional total = national total 2047,PASS,5553.1 vs 5553.2
+Monotone in gdp,PASS,5311 -> 5809
+Monotone in b,PASS,5385 -> 5828
+Monotone in pop_2047,PASS,5517 -> 5588
+Monotone in h2_mt_2047,PASS,5357 -> 5749
+Monotone in k,PASS,5462 -> 5647
+"Realised elasticity FY18->FY26 within MC range [0.60, 0.92]",PASS,realised 0.694
+Base elasticity within ±0.05 of realised FY18->FY26,PASS,base 0.689 vs realised 0.694
+INFO: short-sample within-state b (<=FY18) is unstable,NOTE,b=0.429 -> FY26 error -9.8%; 4 years incl. shortage period
+Monte Carlo runs complete & finite,PASS,2000 runs

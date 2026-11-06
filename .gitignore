@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.DS_Store
+official/
+out/*.zip
+out/official_diff.csv
+.venv/

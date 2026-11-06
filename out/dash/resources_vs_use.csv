@@ -1,0 +1,6 @@
+region,solar_potential_gw,wind_potential_gw,hydro_potential_gw,solar_used_2047_gw,wind_used_2047_gw,hydro_used_2047_gw
+Eastern,198.3,0.0,10.1,0.0,0.0,5.8
+North-Eastern,37.2,0.0,55.9,0.0,0.0,37.8
+Northern,788.8,284.2,47.0,638.2,0.0,47.0
+Southern,704.3,442.4,12.6,184.7,220.2,12.6
+Western,946.1,410.1,7.8,456.1,154.8,7.8
