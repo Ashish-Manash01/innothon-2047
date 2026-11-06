@@ -304,7 +304,7 @@ section("dashboard", title("Explore every assumption live: the models re-run as 
 {card("Inspect regional trade-offs", "Change the CO₂ cap, nuclear policy, build speed, transmission or storage cost and the optimiser re-solves all five regions in about two seconds, with 13 checks on every solution.")}
 {card("Explore scenarios", "Save settings and compare them with the 1.2 Gt and draft-NEP-like 1.7 Gt cases; see the pathway re-solve to 2047 and the FY26 backcast.")}
 </div>
-<p style="font-size:30px;line-height:1.4;color:{INK}">Built in Streamlit on our own Python models; a pre-computed backup runs on claude.ai. AI tools: built with help from Claude (Anthropic) for data gathering, coding and drafting, as the competition terms require us to disclose.</p>''',
+<p style="font-size:30px;line-height:1.4;color:{INK}"><a href="https://innothon-2047-lht5kj3587q6dwmteapysu.streamlit.app/">innothon-2047-lht5kj3587q6dwmteapysu.streamlit.app</a> · built in Streamlit on our own Python models; a pre-computed backup runs on claude.ai. AI tools: built with help from Claude (Anthropic) for data gathering, coding and drafting, as the competition terms require us to disclose.</p>''',
         "Switch to the live app now and follow the demo script: Overview, then the Karnataka trace, then hydrogen at 25 Mt, then build speed at 0.75 and nuclear delayed on the Generation mix tab, then the checks, the backcast and the scenario comparison. If the app is slow, use the backup tab with the same story.")
 
 # ------------------------------------------------------------------ write
