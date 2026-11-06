@@ -19,3 +19,5 @@ Monotone in k,PASS,5462 -> 5647
 Base elasticity within ±0.05 of realised FY18->FY26,PASS,base 0.689 vs realised 0.694
 INFO: short-sample within-state b (<=FY18) is unstable,NOTE,b=0.429 -> FY26 error -9.8%; 4 years incl. shortage period
 Monte Carlo runs complete & finite,PASS,2000 runs
+Electrification layer off by default,PASS,0 TWh
+Electrification layer adds (heat+cook) x bridge,PASS,+187 TWh
