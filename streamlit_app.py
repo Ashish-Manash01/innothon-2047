@@ -17,7 +17,11 @@ import streamlit as st
 ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT / "model"))
 
-st.set_page_config(page_title="India 2047 Electricity Forecast", page_icon="⚡", layout="wide")
+st.set_page_config(page_title="India 2047 Electricity Forecast", page_icon="⚡", layout="wide", initial_sidebar_state="expanded")
+st.markdown("""<style>
+[data-testid="stMetricValue"] { font-size: 1.75rem; }
+[data-testid="stMetricLabel"] p { font-size: 0.85rem; }
+</style>""", unsafe_allow_html=True)
 
 SRC = ["coal", "gas", "nuclear", "hydro", "solar", "wind"]
 LAB = dict(coal="Coal", gas="Natural gas", nuclear="Nuclear", hydro="Hydro", solar="Solar", wind="Wind", bess="Batteries", psp="Pumped storage")
@@ -112,7 +116,7 @@ if "gdp" not in st.session_state:
     reset()
 gdp = st.sidebar.slider("Real GDP growth, % a year", 4.5, 8.5, key="gdp", step=0.1)
 b = st.sidebar.slider("Income elasticity of electricity use", 0.50, 1.00, key="b", step=0.01,
-                      help=f"Estimated {dm.B_HAT:.3f} (SE {dm.B_SE:.3f}) from a 32-state fixed-effects panel")
+                      format="%.3f", help=f"Estimated {dm.B_HAT:.3f} (SE {dm.B_SE:.3f}) from a 32-state fixed-effects panel")
 k = st.sidebar.slider("Elasticity in 2047 as share of today's (maturing demand)", 0.50, 1.00, key="k", step=0.05)
 pop = st.sidebar.slider("Population 2047, million", 1550, 1780, key="pop", step=5, help="UN WPP 2024 medium: 1,665 million")
 ev = st.sidebar.select_slider("Electric-vehicle adoption", ["Slow", "Base", "Fast"], key="ev")
@@ -186,7 +190,7 @@ def fan_chart(series):
     yrs = [2026, 2031, 2036, 2041, 2047]
     lo = [nb0.loc[2026, "gen_total"]] + [q[f"gen_total_{y}"].quantile(0.1) for y in yrs[1:]]
     hi = [nb0.loc[2026, "gen_total"]] + [q[f"gen_total_{y}"].quantile(0.9) for y in yrs[1:]]
-    fig.add_scatter(x=yrs + yrs[::-1], y=hi + lo[::-1], fill="toself", fillcolor="rgba(58,134,200,0.15)", line=dict(width=0),
+    fig.add_scatter(x=yrs + yrs[::-1], y=hi + lo[::-1], fill="toself", fillcolor="rgba(58,134,200,0.15)", line=dict(width=0), mode="lines",
                     name="Monte Carlo P10–P90", hoverinfo="skip")
     fig.add_scatter(x=hist.index, y=hist.generation_bu, name="Actual (CEA)", line=dict(color="#1B2433", width=2.5))
     for name, s, style in series:
@@ -204,7 +208,8 @@ with tabs[0]:
     c[0].metric("Generation FY2046-47", f"{fmt0(tot)} TWh", f"{tot - nb0.loc[2047,'gen_total']:+,.0f} vs base" if abs(tot - nb0.loc[2047, 'gen_total']) > 0.5 else None)
     c[1].metric("Grid demand (excl. H₂)", f"{fmt0(nb.loc[2047,'gen_grid'])} TWh")
     c[2].metric("Green-hydrogen electricity", f"{fmt0(nb.loc[2047,'gen_h2'])} TWh")
-    c[3].metric("Non-fossil share 2047", f"{S['non_fossil_%']:.1f}%", f"FY26: {100 - (fy26_reg.coal_lignite.sum() + fy26_reg.gas.sum()) / fy26_reg[['coal_lignite','gas','nuclear','hydro','solar','wind']].sum().sum() * 100:.1f}%", delta_color="off")
+    nf26 = 100 - (fy26_reg.coal_lignite.sum() + fy26_reg.gas.sum()) / fy26_reg[['coal_lignite','gas','nuclear','hydro','solar','wind']].sum().sum() * 100
+    c[3].metric("Non-fossil share 2047", f"{S['non_fossil_%']:.1f}%", help=f"FY26 actual: {nf26:.1f}%")
     c[4].metric("Power-sector CO₂ 2047", f"{fmt0(S['co2_mt'])} Mt")
     c[5].metric("Average system cost", f"₹{S['cost_rs_per_kwh']:.2f}/kWh")
     l, r = st.columns([1.15, 1])
@@ -212,23 +217,23 @@ with tabs[0]:
         st.subheader("Generation requirement: history and forecast")
         st.plotly_chart(fan_chart([("Current assumptions (total)", nb.gen_total, dict(color="#D0587E", width=3)),
                                    ("Current assumptions (grid only)", nb.gen_grid, dict(color="#D0587E", dash="dot")),
-                                   ("Base case (total)", nb0.gen_total, dict(color="#3A86C8", dash="dash"))]), use_container_width=True, key="c1")
+                                   ("Base case (total)", nb0.gen_total, dict(color="#3A86C8", dash="dash"))]), width="stretch", key="c1")
     with r:
         st.subheader("Regional generation mix, FY2046-47")
         st.caption("Least-cost plan with CO₂ held at today's 1.2 Gt, for the current demand assumptions.")
-        st.plotly_chart(stacked_regions(o["gen"]), use_container_width=True, key="c2")
+        st.plotly_chart(stacked_regions(o["gen"]), width="stretch", key="c2")
     l, r = st.columns([1, 1.15])
     with l:
         st.subheader("Grid regions (CEA)")
         st.caption("Schematic tile map: one square per state or union territory, coloured by CEA grid region. Not a boundary map.")
-        st.plotly_chart(tile_map({}, "", by_region=True), use_container_width=True, key="c3")
+        st.plotly_chart(tile_map({}, "", by_region=True), width="stretch", key="c3")
     with r:
         st.subheader("Each region's role in 2047")
         G = o["gen"]; net = G.sum(axis=1) - o["demand"]
         tbl = pd.DataFrame({"Generation TWh": G.sum(axis=1), "Demand TWh": o["demand"], "Net export TWh": net,
                             **{f"{LAB[s]} %": G[s] / G.sum(axis=1) * 100 for s in SRC}}).reindex(REG)
         st.dataframe(tbl.style.format("{:,.0f}", subset=["Generation TWh", "Demand TWh", "Net export TWh"]).format("{:.1f}", subset=[f"{LAB[s]} %" for s in SRC]),
-                     use_container_width=True, key="c4")
+                     width="stretch", key="c4")
         st.markdown("- **Northern:** Rajasthan solar hub plus Himalayan hydro; exports midday solar.\n"
                     "- **Western:** coastal wind, large solar and the cheapest pithead coal (Chhattisgarh, Madhya Pradesh).\n"
                     "- **Southern:** wind in Tamil Nadu, Karnataka and Andhra Pradesh; nuclear firms the weaker sun.\n"
@@ -247,14 +252,14 @@ with tabs[1]:
     with l:
         st.subheader("Selected vs base")
         st.plotly_chart(fan_chart([("Selected", nb.gen_total, dict(color="#D0587E", width=3)), ("Base", nb0.gen_total, dict(color="#3A86C8", dash="dash"))]),
-                        use_container_width=True, key="c5")
+                        width="stretch", key="c5")
     with r:
         st.subheader("What the demand is made of")
         fig = go.Figure()
         for col, name, cl in [("gen_organic", "Organic demand", "#3A86C8"), ("gen_ev_dc", "EVs + data centres", "#D0587E"), ("gen_h2", "Green hydrogen", "#34A585")]:
             fig.add_scatter(x=nb.index, y=nb[col], stackgroup="one", name=name, line=dict(color=cl))
         fig.update_layout(height=380, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh generated", legend=dict(orientation="h", y=-0.2), hovermode="x unified")
-        st.plotly_chart(fig, use_container_width=True, key="c6")
+        st.plotly_chart(fig, width="stretch", key="c6")
     l, r = st.columns([1, 1.2])
     with l:
         st.subheader("Demand growth by state, FY26 → FY47")
@@ -262,7 +267,7 @@ with tabs[1]:
         metric = st.radio("Colour by", ["2047 requirement (TWh)", "Growth multiple"], horizontal=True, key="mapm")
         vals = (s47 if metric.startswith("2047") else (s47 / s26)).to_dict()
         st.plotly_chart(tile_map(vals, "TWh" if metric.startswith("2047") else "× FY26", fmt=(fmt0 if metric.startswith("2047") else (lambda v: f"{v:.2f}×"))),
-                        use_container_width=True, key="c7")
+                        width="stretch", key="c7")
     with r:
         st.subheader("By region")
         rr = reg[reg.fy_end.isin([2030, 2035, 2040, 2047])].pivot(index="region", columns="fy_end", values="gen_total_twh").reindex(REG)
@@ -270,7 +275,7 @@ with tabs[1]:
         for y, cl in zip(rr.columns, ["#C8CDD6", "#B07D3A", "#3A86C8", "#D0587E"]):
             fig.add_bar(x=REG, y=rr[y], name=f"FY{str(y)[2:]}", marker_color=cl)
         fig.update_layout(barmode="group", height=360, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh generated", legend=dict(orientation="h", y=-0.2))
-        st.plotly_chart(fig, use_container_width=True, key="c8")
+        st.plotly_chart(fig, width="stretch", key="c8")
     st.subheader("Trace the forecast for one state")
     names = states.set_index("code").state
     codes = [c for c in stt.code.unique() if c in names.index]
@@ -280,20 +285,21 @@ with tabs[1]:
     st.caption(f"Each year: kWh per person grows with income per person at elasticity b × (fading to {k:.2f}·b by 2047), "
                f"adjusted for urbanisation (coefficient {dm.C_HAT:.4f}); requirement = population × kWh per person. "
                "New loads (EVs, data centres, hydrogen) are added at regional level.")
-    st.dataframe(t.loc[[2026, 2030, 2035, 2040, 2047]].style.format("{:,.1f}"), use_container_width=True, key="c9")
+    st.dataframe(t.loc[[2026, 2030, 2035, 2040, 2047]].style.format("{:,.1f}"), width="stretch", key="c9")
     st.download_button("Download all states × years (CSV)", stt.to_csv(index=False).encode(), "state_demand_forecast.csv")
 
 # ================================================================== MIX
 with tabs[2]:
     st.caption("Each change solves the least-cost optimiser again for FY2046-47 (5 regions × 6 sources × 12 time slices), using the demand from the sidebar.")
-    c = st.columns(6)
+    c = st.columns(3)
     co2 = c[0].slider("CO₂ cap, Mt", 600, 2000, 1200, 50, help="Today ≈ 1,200 Mt. Draft-NEP-like ≈ 1,700 Mt.")
-    nuc = c[1].selectbox("Nuclear policy", ["Least cost, up to 100 GW", "Mission: exactly 100 GW", "Delayed: at most 50 GW"])
+    nuc = c[1].selectbox("Nuclear policy", ["Least cost (≤ 100 GW)", "Mission (100 GW)", "Delayed (≤ 50 GW)"])
     rem = c[2].slider("Solar & wind build speed", 0.6, 1.4, 1.0, 0.05, help="1.0 = 1,279 GW solar and 375 GW wind by 2047")
-    tx = c[3].slider("Inter-regional transmission × today", 1.0, 5.0, 3.0, 0.5)
-    sto = c[4].slider("Storage cost × 2026", 0.5, 2.0, 1.0, 0.1)
-    sol = c[5].slider("Solar cost × 2026", 0.6, 1.6, 1.0, 0.1)
-    nuc_cap, nuc_floor = {"Least cost, up to 100 GW": (100, 0), "Mission: exactly 100 GW": (100, 100), "Delayed: at most 50 GW": (50, 0)}[nuc]
+    c = st.columns(3)
+    tx = c[0].slider("Inter-regional transmission × today", 1.0, 5.0, 3.0, 0.5)
+    sto = c[1].slider("Storage cost × 2026", 0.5, 2.0, 1.0, 0.1)
+    sol = c[2].slider("Solar cost × 2026", 0.6, 1.6, 1.0, 0.1)
+    nuc_cap, nuc_floor = {"Least cost (≤ 100 GW)": (100, 0), "Mission (100 GW)": (100, 100), "Delayed (≤ 50 GW)": (50, 0)}[nuc]
     with st.spinner("Solving…"):
         o = run_mix(DKEY, co2, nuc_cap, nuc_floor, rem, tx, sto, sol)
     if o.get("status") != "Optimal":
@@ -318,10 +324,10 @@ with tabs[2]:
             fig = go.Figure(go.Pie(labels=[LAB[s] for s in SRC], values=[nat[s] for s in SRC], hole=0.55, marker_colors=[COL[s] for s in SRC],
                                    sort=False, texttemplate="%{label}<br>%{percent:.1%}", hovertemplate="%{label}: %{value:,.0f} TWh<extra></extra>"))
             fig.update_layout(height=360, margin=dict(l=10, r=10, t=10, b=10), showlegend=False)
-            st.plotly_chart(fig, use_container_width=True, key="c10")
+            st.plotly_chart(fig, width="stretch", key="c10")
         with r:
             st.subheader("Regional mix (TWh)")
-            st.plotly_chart(stacked_regions(G), use_container_width=True, key="c11")
+            st.plotly_chart(stacked_regions(G), width="stretch", key="c11")
         l, r = st.columns(2)
         with l:
             st.subheader("Who exports, who imports")
@@ -329,7 +335,7 @@ with tabs[2]:
             fig = go.Figure(go.Bar(x=net.values, y=REG, orientation="h", marker_color=["#34A585" if v > 0 else "#C9821B" for v in net.values],
                                    hovertemplate="%{y}: %{x:+,.0f} TWh<extra></extra>"))
             fig.update_layout(height=300, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Net export, TWh", yaxis=dict(autorange="reversed"))
-            st.plotly_chart(fig, use_container_width=True, key="c12")
+            st.plotly_chart(fig, width="stretch", key="c12")
         with r:
             st.subheader("How each season and time of day is supplied")
             gs = o["gen_slices"].groupby(["season", "period", "source"]).twh.sum().unstack()
@@ -341,16 +347,16 @@ with tabs[2]:
                 fig.add_bar(x=xl, y=gs[s].values / hrs * 1000, name=LAB[s], marker_color=COL[s])
             fig.add_bar(x=xl, y=sto_d / hrs * 1000, name="Storage discharge", marker_color=COL["bess"])
             fig.update_layout(barmode="stack", height=300, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="Average GW", legend=dict(orientation="h", y=-0.35))
-            st.plotly_chart(fig, use_container_width=True, key="c13")
+            st.plotly_chart(fig, width="stretch", key="c13")
         st.subheader("Capacity needed (GW)")
         capt = C.assign(Batteries=o["bess"], **{"Pumped storage": o["psp"]}).rename(columns=LAB).reindex(REG)
         capt.loc["India"] = capt.sum()
-        st.dataframe(capt.style.format("{:,.1f}"), use_container_width=True, key="c14")
+        st.dataframe(capt.style.format("{:,.1f}"), width="stretch", key="c14")
         with st.expander(f"Independent checks on this solution: {int(o['checks']['pass'].sum())}/{len(o['checks'])} pass"):
-            st.dataframe(o["checks"].astype(str), use_container_width=True, hide_index=True)
+            st.dataframe(o["checks"].astype(str), width="stretch", hide_index=True)
         if st.button("Save this setting for comparison"):
             st.session_state.setdefault("saved", []).append({
-                "Scenario": f"GDP {gdp}%, b {b}, H₂ {h2} Mt | CO₂ {co2}, {nuc.split(':')[0]}, build ×{rem}, tx ×{tx}",
+                "Scenario": f"GDP {gdp}%, b {b}, H₂ {h2} Mt | CO₂ {co2}, {nuc.split(' (')[0]}, build ×{rem}, tx ×{tx}",
                 "Demand TWh": tot, **{f"{LAB[s]} %": G[s].sum() / G.sum().sum() * 100 for s in SRC},
                 "Non-fossil %": S["non_fossil_%"], "CO₂ Mt": S["co2_mt"], "₹/kWh": S["cost_rs_per_kwh"],
                 "Unserved TWh": o["unserved"], "Over cap Mt": o["co2_excess"]})
@@ -371,7 +377,7 @@ with tabs[3]:
         for s in SRC:
             fig.add_bar(x=yrs, y=[act[s]] + list(pw[s]), name=LAB[s], marker_color=COL[s])
         fig.update_layout(barmode="stack", height=380, margin=dict(l=10, r=10, t=10, b=10), legend=dict(orientation="h", y=-0.2))
-        st.plotly_chart(fig, use_container_width=True, key="c15")
+        st.plotly_chart(fig, width="stretch", key="c15")
     with r:
         st.subheader("Installed capacity (GW)")
         fig = go.Figure()
@@ -380,17 +386,17 @@ with tabs[3]:
             fig.add_scatter(x=[2026] + list(pw.index), y=[now[s]] + list(pw[f"{s}_gw"]), name=LAB[s], line=dict(color=COL[s], width=2.5))
         fig.add_scatter(x=list(pw.index), y=pw.bess_gw, name="Batteries", line=dict(color=COL["bess"], width=2.5))
         fig.update_layout(height=380, margin=dict(l=10, r=10, t=10, b=10), legend=dict(orientation="h", y=-0.2), hovermode="x unified")
-        st.plotly_chart(fig, use_container_width=True, key="c16")
+        st.plotly_chart(fig, width="stretch", key="c16")
     tbl = pd.DataFrame({"Total TWh": [act.sum()] + list(pw[SRC].sum(axis=1)),
                         "Coal %": [act.coal / act.sum() * 100] + list(pw.coal / pw[SRC].sum(axis=1) * 100),
                         "Non-fossil %": [(1 - (act.coal + act.gas) / act.sum()) * 100] + list((1 - (pw.coal + pw.gas) / pw[SRC].sum(axis=1)) * 100),
                         "CO₂ Mt": [0.96 * act.coal + 0.40 * act.gas] + list(pw.co2_mt),
-                        "CO₂ cap Mt": [np.nan] + list(pw.co2_cap), "Unserved TWh": [np.nan] + list(pw.unserved)}, index=yrs)
-    st.dataframe(tbl.style.format("{:,.1f}", na_rep="—"), use_container_width=True, key="c17")
+                        "CO₂ cap Mt": [np.nan] + list(pw.co2_cap), "Unserved TWh": [np.nan] + list(pw.unserved)}, index=yrs).astype(float)
+    st.dataframe(tbl.style.format("{:,.1f}", na_rep="—"), width="stretch", key="c17")
     st.subheader("Regional mix by year")
     yy = st.select_slider("Year", list(pw.index), value=2047)
     Gy = pd.DataFrame({s: {r: pw.loc[yy, f"{r}|{s}"] for r in REG} for s in SRC})
-    st.plotly_chart(stacked_regions(Gy), use_container_width=True, key="c18")
+    st.plotly_chart(stacked_regions(Gy), width="stretch", key="c18")
 
 # ================================================================== COMPARE
 with tabs[4]:
@@ -401,13 +407,13 @@ with tabs[4]:
         refs.append({"Scenario": name, "Demand TWh": nb0.loc[2047, "gen_total"], **{f"{LAB[s]} %": G[s].sum() / G.sum().sum() * 100 for s in SRC},
                      "Non-fossil %": Sx["non_fossil_%"], "CO₂ Mt": Sx["co2_mt"], "₹/kWh": Sx["cost_rs_per_kwh"], "Unserved TWh": oo["unserved"], "Over cap Mt": oo["co2_excess"]})
     comp = pd.DataFrame(refs + st.session_state.get("saved", [])).set_index("Scenario")
-    st.dataframe(comp.style.format("{:,.1f}"), use_container_width=True, key="c19")
+    st.dataframe(comp.style.format("{:,.1f}"), width="stretch", key="c19")
     fig = go.Figure()
     for s in SRC:
         fig.add_bar(y=comp.index, x=comp[f"{LAB[s]} %"], name=LAB[s], orientation="h", marker_color=COL[s])
     fig.update_layout(barmode="stack", height=120 + 50 * len(comp), margin=dict(l=10, r=10, t=10, b=10), xaxis_title="% of generation",
                       legend=dict(orientation="h", y=-0.3), yaxis=dict(autorange="reversed"))
-    st.plotly_chart(fig, use_container_width=True, key="c20")
+    st.plotly_chart(fig, width="stretch", key="c20")
     if st.session_state.get("saved") and st.button("Clear saved scenarios"):
         st.session_state["saved"] = []; st.rerun()
     st.subheader("What moves the 2047 demand most (one driver at a time)")
@@ -416,7 +422,7 @@ with tabs[4]:
     fig.add_bar(y=tor.driver, x=tor.low, orientation="h", name="Low value", marker_color="#B8BFCB")
     fig.add_bar(y=tor.driver, x=tor.high, orientation="h", name="High value", marker_color="#2A7F8F")
     fig.update_layout(barmode="overlay", height=380, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Change vs base, TWh", legend=dict(orientation="h", y=-0.2))
-    st.plotly_chart(fig, use_container_width=True, key="c21")
+    st.plotly_chart(fig, width="stretch", key="c21")
 
 # ================================================================== VALIDATION
 with tabs[5]:
@@ -428,29 +434,29 @@ with tabs[5]:
         fig.add_bar(x=[LAB[s] for s in SRC], y=n_.loc[SRC, "actual_twh"], name="Actual (CEA)", marker_color="#B8BFCB")
         fig.add_bar(x=[LAB[s] for s in SRC], y=n_.loc[SRC, "model_twh"], name="Model", marker_color="#3A86C8")
         fig.update_layout(barmode="group", height=330, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh", legend=dict(orientation="h", y=-0.2))
-        st.plotly_chart(fig, use_container_width=True, key="c22")
+        st.plotly_chart(fig, width="stretch", key="c22")
         st.caption("Regional coal is placed within 6% of national coal. Gas runs on contracts in reality, which a least-cost model does not see.")
-        st.dataframe(bk[bk.source == "coal"].drop(columns="source").set_index("region"), use_container_width=True, key="c23")
+        st.dataframe(bk[bk.source == "coal"].drop(columns="source").set_index("region"), width="stretch", key="c23")
     with r:
         st.subheader("Against official and published numbers")
-        st.dataframe(pd.read_csv(OUT / "dash" / "benchmarks.csv"), use_container_width=True, hide_index=True)
+        st.dataframe(pd.read_csv(OUT / "dash" / "benchmarks.csv"), width="stretch", hide_index=True)
         st.subheader("Income elasticity: four specifications")
-        st.dataframe(csv("panel_coefficients.csv"), use_container_width=True, hide_index=True)
+        st.dataframe(csv("panel_coefficients.csv"), width="stretch", hide_index=True)
         st.caption("Realised FY18→FY26 elasticity: 0.694. Out-of-sample error FY24–26: regression 9.2%, gradient boosting 16.3%, last-value 8.8%.")
     st.subheader("Demand model tests")
-    st.dataframe(csv("v1_tests.csv"), use_container_width=True, hide_index=True)
+    st.dataframe(csv("v1_tests.csv"), width="stretch", hide_index=True)
 
 # ================================================================== ASSUMPTIONS
 with tabs[6]:
     a = pd.read_csv(OUT / "dash" / "assumptions.csv")
     q = st.text_input("Search assumptions")
-    st.dataframe(a[a.apply(lambda r: q.lower() in " ".join(map(str, r.values)).lower(), axis=1)] if q else a, use_container_width=True, hide_index=True)
+    st.dataframe(a[a.apply(lambda r: q.lower() in " ".join(map(str, r.values)).lower(), axis=1)] if q else a, width="stretch", hide_index=True)
     l, r = st.columns(2)
     with l:
         st.subheader("Resource potential vs base 2047 use (GW)")
-        st.dataframe(pd.read_csv(OUT / "dash" / "resources_vs_use.csv").set_index("region"), use_container_width=True, key="c24")
+        st.dataframe(pd.read_csv(OUT / "dash" / "resources_vs_use.csv").set_index("region"), width="stretch", key="c24")
     with r:
         st.subheader("Data sources")
-        st.dataframe(pd.read_csv(OUT / "dash" / "sources.csv"), use_container_width=True, hide_index=True)
+        st.dataframe(pd.read_csv(OUT / "dash" / "sources.csv"), width="stretch", hide_index=True)
     st.info("AI tools: built with help from Claude (Anthropic) for data gathering, coding and drafting, as the competition terms require us to disclose. "
             "All numbers come from the cited sources and the team's own reproducible model runs.")

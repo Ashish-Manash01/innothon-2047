@@ -23,7 +23,7 @@ def run(label, at):
 
 at = AppTest.from_file(APP, default_timeout=300)
 run("Initial load (base case)", at)
-hdr = [m.value for m in at.markdown][0]
+hdr = [m.value for m in at.markdown if "TWh** of electricity" in m.value][0]
 print("     header:", hdr[:160])
 assert "5,553 TWh" in hdr, "base total should be 5,553 TWh"
 m = {x.label: x.value for x in at.metric}
@@ -35,17 +35,17 @@ at.slider(key="gdp").set_value(7.5); run("GDP 7.5%", at)
 at.slider(key="h2").set_value(25.0); run("Hydrogen 25 Mt", at)
 at.select_slider(key="ev").set_value("Fast"); run("EV fast", at)
 at.slider(key="b").set_value(0.85); run("Elasticity 0.85 (high demand, stress)", at)
-print("     header:", [m.value for m in at.markdown][0][:120])
+print("     header:", [m.value for m in at.markdown if "TWh** of electricity" in m.value][0][:120])
 # mix controls (sliders without keys: find by label)
 sl = {s.label: s for s in at.slider}
 sl["CO₂ cap, Mt"].set_value(800); run("CO₂ cap 800 Mt", at)
-[s for s in at.selectbox if s.label == "Nuclear policy"][0].set_value("Delayed: at most 50 GW"); run("Nuclear delayed", at)
+[s for s in at.selectbox if s.label == "Nuclear policy"][0].set_value("Delayed (≤ 50 GW)"); run("Nuclear delayed", at)
 sl = {s.label: s for s in at.slider}
 sl["Solar & wind build speed"].set_value(0.7); run("Build speed 0.7", at)
 print("     warnings:", [w.value[:90] for w in at.warning])
 at.button[[b.label for b in at.button].index("Save this setting for comparison")].click(); run("Save scenario", at)
 at.button[[b.label for b in at.button].index("Reset to base case")].click(); run("Reset demand", at)
-assert "5,553 TWh" in [m.value for m in at.markdown][0]
+assert "5,553 TWh" in [m.value for m in at.markdown if "TWh** of electricity" in m.value][0]
 sel = [s for s in at.selectbox if s.label == "State or union territory"][0]
 sel.set_value("UP"); run("Trace Uttar Pradesh", at)
 at.radio[0].set_value("Growth multiple"); run("Map: growth multiple", at)
