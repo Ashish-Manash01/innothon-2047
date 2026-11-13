@@ -18,16 +18,14 @@ ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT / "model"))
 
 st.set_page_config(page_title="India 2047 Electricity Forecast", page_icon="⚡", layout="wide", initial_sidebar_state="expanded")
-st.markdown("""<style>
-[data-testid="stMetricValue"] { font-size: 1.75rem; }
-[data-testid="stMetricLabel"] p { font-size: 0.85rem; }
-</style>""", unsafe_allow_html=True)
+import viz
+viz.setup()
 
 SRC = ["coal", "gas", "nuclear", "hydro", "solar", "wind"]
 LAB = dict(coal="Coal", gas="Natural gas", nuclear="Nuclear", hydro="Hydro", solar="Solar", wind="Wind", bess="Batteries", psp="Pumped storage")
-COL = dict(coal="#6E6E73", gas="#B07D3A", nuclear="#8A6CC9", hydro="#3A86C8", solar="#E0AA22", wind="#34A585", bess="#D0587E", psp="#5B8DB8")
+COL = viz.COL
 REG = ["Northern", "Western", "Southern", "Eastern", "North-Eastern"]
-REGCOL = {"Northern": "#E0AA22", "Western": "#C9821B", "Southern": "#34A585", "Eastern": "#6E6E73", "North-Eastern": "#3A86C8"}
+REGCOL = viz.REGCOL
 OUT = ROOT / "out"; DATA = ROOT / "data"
 fmt0 = lambda v: f"{v:,.0f}"
 
@@ -140,47 +138,33 @@ nb0, _, reg0 = run_demand(BKEY)
 fy26 = hist.loc[2026, "generation_bu"]
 
 # ------------------------------------------------------------------ header
-st.title("India 2047 electricity generation forecast")
 tot = nb.loc[2047, "gen_total"]; mult = tot / fy26
-st.markdown(f"**{fmt0(tot)} TWh** of electricity generation in FY2046-47 under the current assumptions: **{mult:.1f}×** FY26 "
-            f"({fmt0(fy26)} TWh), {((mult ** (1/21)) - 1) * 100:.1f}% a year. Base case {fmt0(nb0.loc[2047,'gen_total'])} TWh; "
-            f"Monte Carlo P10–P90 {fmt0(mcq.loc['gen_total_2047','P10'])}–{fmt0(mcq.loc['gen_total_2047','P90'])} TWh.")
+o = run_mix(DKEY, 1200, 100, 0, 1.0, 3.0, 1.0, 1.0)
+S = o["summary"]
+hl, hr = st.columns([1, 1.35], gap="large")
+with hl:
+    st.markdown(f"""<div class="hero">
+<h1>India will need {fmt0(tot)} TWh of electricity in 2047</h1>
+<p class="lede">That is {mult:.1f} times what the country generated in FY26. Under a 1.2 Gt CO₂ cap, the least-cost plan makes
+{S['non_fossil_%']:.0f}% of it without fossil fuels, with each grid region building on what its land, sun, wind and rivers offer.</p>
+<div class="facts">
+<div><b>{fmt0(mcq.loc['gen_total_2047','P10'])}–{fmt0(mcq.loc['gen_total_2047','P90'])}</b><span>TWh, likely range (P10–P90)</span></div>
+<div><b>{S['non_fossil_%']:.0f}%</b><span>non-fossil generation</span></div>
+<div><b>₹{S['cost_rs_per_kwh']:.2f}</b><span>average cost per kWh</span></div>
+</div></div>""", unsafe_allow_html=True)
+    st.caption(f"Base case {fmt0(nb0.loc[2047,'gen_total'])} TWh; {((mult ** (1/21)) - 1) * 100:.1f}% a year from FY26's {fmt0(fy26)} TWh. "
+               "Forecast fitted on energy generated only. Move the sidebar sliders and everything re-runs.")
+with hr:
+    if o.get("status") == "Optimal":
+        viz.grid_map_3d(o["gen"], o["demand"], o["flows"], SRC, LAB, height=500, key="hero_map")
+        st.markdown(viz.legend([(r, REGCOL[r]) for r in REG]) +
+                    '<p style="color:#93A3BA;font-size:0.88rem;margin-top:4px">Height = electricity generated in 2047. Arcs = net power sent between regions. Drag to tilt, hover for the mix.</p>',
+                    unsafe_allow_html=True)
 
 tabs = st.tabs(["Overview", "Demand forecast", "Generation mix", "Pathway to 2047", "Compare scenarios", "Validation", "Assumptions & sources"])
 
 
 # ------------------------------------------------------------------ helpers
-def tile_map(values, title, fmt=lambda v: fmt0(v), colorscale=None, by_region=False):
-    """Schematic tile map of states (not a geographic boundary map)."""
-    TILE = dict(JK=(2, 0), LA=(3, 0), CH=(0, 1), PB=(1, 1), HP=(2, 1), UK=(3, 1), SK=(5, 1), AR=(7, 1),
-                RJ=(0, 2), HR=(1, 2), DL=(2, 2), UP=(3, 2), BR=(4, 2), AS=(6, 2), NL=(7, 2),
-                GJ=(0, 3), MP=(1, 3), CG=(2, 3), JH=(3, 3), WB=(4, 3), ML=(6, 3), MN=(7, 3),
-                DN=(0, 4), MH=(1, 4), TG=(2, 4), OD=(3, 4), TR=(6, 4), MZ=(7, 4),
-                GA=(0, 5), KA=(1, 5), AP=(2, 5), LD=(0, 6), KL=(1, 6), TN=(2, 6), PY=(3, 6), AN=(5, 6))
-    s = states.set_index("code")
-    fig = go.Figure()
-    for code, (x, y) in TILE.items():
-        r = s.loc[code, "cea_region"]; v = values.get(code, np.nan) if not by_region else None
-        fill = REGCOL[r] if by_region else None
-        fig.add_shape(type="rect", x0=x, x1=x + 0.94, y0=-y, y1=-y - 0.94, line=dict(color="white", width=1),
-                      fillcolor=fill if by_region else "rgba(0,0,0,0)")
-    xs, ys, txt, vals, hov = [], [], [], [], []
-    for code, (x, y) in TILE.items():
-        xs.append(x + 0.47); ys.append(-y - 0.47); txt.append(code)
-        v = values.get(code, np.nan); vals.append(v)
-        hov.append(f"{s.loc[code,'state']} ({s.loc[code,'cea_region']})" + ("" if by_region or pd.isna(v) else f"<br>{title}: {fmt(v)}"))
-    if by_region:
-        fig.add_trace(go.Scatter(x=xs, y=ys, mode="text", text=txt, hovertext=hov, hoverinfo="text", textfont=dict(color="white", size=13)))
-    else:
-        fig.add_trace(go.Scatter(x=xs, y=ys, mode="markers+text", text=txt, hovertext=hov, hoverinfo="text",
-                                 marker=dict(symbol="square", size=44, color=vals, colorscale=colorscale or "YlOrBr", showscale=True,
-                                             colorbar=dict(title=title, thickness=12), line=dict(color="white", width=1)),
-                                 textfont=dict(color="black", size=12)))
-    fig.update_layout(height=430, margin=dict(l=10, r=10, t=10, b=10), showlegend=False, plot_bgcolor="rgba(0,0,0,0)",
-                      xaxis=dict(visible=False, range=[-0.3, 8.2]), yaxis=dict(visible=False, range=[-7.2, 0.3], scaleanchor="x"))
-    return fig
-
-
 def stacked_regions(G, title_unit="TWh"):
     fig = go.Figure()
     for s in SRC:
@@ -199,7 +183,7 @@ def fan_chart(series):
     hi = [nb0.loc[2026, "gen_total"]] + [q[f"gen_total_{y}"].quantile(0.9) for y in yrs[1:]]
     fig.add_scatter(x=yrs + yrs[::-1], y=hi + lo[::-1], fill="toself", fillcolor="rgba(58,134,200,0.15)", line=dict(width=0), mode="lines",
                     name="Monte Carlo P10–P90", hoverinfo="skip")
-    fig.add_scatter(x=hist.index, y=hist.generation_bu, name="Actual (CEA)", line=dict(color="#1B2433", width=2.5))
+    fig.add_scatter(x=hist.index, y=hist.generation_bu, name="Actual (CEA)", line=dict(color="#E8EEF7", width=2.5))
     for name, s, style in series:
         fig.add_scatter(x=s.index, y=s.values, name=name, line=style)
     fig.update_layout(height=380, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh generated", legend=dict(orientation="h", y=-0.2),
@@ -209,9 +193,7 @@ def fan_chart(series):
 
 # ================================================================== OVERVIEW
 with tabs[0]:
-    o = run_mix(DKEY, 1200, 100, 0, 1.0, 3.0, 1.0, 1.0)
-    S = o["summary"]
-    c = st.columns(6)
+    c = st.columns(3) + st.columns(3)
     c[0].metric("Generation FY2046-47", f"{fmt0(tot)} TWh", f"{tot - nb0.loc[2047,'gen_total']:+,.0f} vs base" if abs(tot - nb0.loc[2047, 'gen_total']) > 0.5 else None)
     c[1].metric("Grid demand (excl. H₂)", f"{fmt0(nb.loc[2047,'gen_grid'])} TWh")
     c[2].metric("Green-hydrogen electricity", f"{fmt0(nb.loc[2047,'gen_h2'])} TWh")
@@ -222,9 +204,9 @@ with tabs[0]:
     l, r = st.columns([1.15, 1])
     with l:
         st.subheader("Generation requirement: history and forecast")
-        st.plotly_chart(fan_chart([("Current assumptions (total)", nb.gen_total, dict(color="#D0587E", width=3)),
-                                   ("Current assumptions (grid only)", nb.gen_grid, dict(color="#D0587E", dash="dot")),
-                                   ("Base case (total)", nb0.gen_total, dict(color="#3A86C8", dash="dash"))]), width="stretch", key="c1")
+        st.plotly_chart(fan_chart([("Current assumptions (total)", nb.gen_total, dict(color="#F5B83D", width=3)),
+                                   ("Current assumptions (grid only)", nb.gen_grid, dict(color="#F5B83D", dash="dot")),
+                                   ("Base case (total)", nb0.gen_total, dict(color="#4F9BF5", dash="dash"))]), width="stretch", key="c1")
     with r:
         st.subheader("Regional generation mix, FY2046-47")
         st.caption("Least-cost plan with CO₂ held at today's 1.2 Gt, for the current demand assumptions.")
@@ -232,8 +214,9 @@ with tabs[0]:
     l, r = st.columns([1, 1.15])
     with l:
         st.subheader("Grid regions (CEA)")
-        st.caption("Schematic tile map: one square per state or union territory, coloured by CEA grid region. Not a boundary map.")
-        st.plotly_chart(tile_map({}, "", by_region=True), width="stretch", key="c3")
+        st.caption("States and union territories coloured by the CEA grid region they belong to.")
+        st.plotly_chart(viz.region_choropleth(states), width="stretch", key="c3")
+        st.markdown(viz.legend([(r, REGCOL[r]) for r in REG]), unsafe_allow_html=True)
     with r:
         st.subheader("Each region's role in 2047")
         G = o["gen"]; net = G.sum(axis=1) - o["demand"]
@@ -259,12 +242,12 @@ with tabs[1]:
     l, r = st.columns(2)
     with l:
         st.subheader("Selected vs base")
-        st.plotly_chart(fan_chart([("Selected", nb.gen_total, dict(color="#D0587E", width=3)), ("Base", nb0.gen_total, dict(color="#3A86C8", dash="dash"))]),
+        st.plotly_chart(fan_chart([("Selected", nb.gen_total, dict(color="#F5B83D", width=3)), ("Base", nb0.gen_total, dict(color="#4F9BF5", dash="dash"))]),
                         width="stretch", key="c5")
     with r:
         st.subheader("What the demand is made of")
         fig = go.Figure()
-        for col, name, cl in [("gen_organic", "Organic demand", "#3A86C8"), ("gen_ev_dc", "EVs + data centres", "#D0587E"), ("gen_elec", "Heat + cooking", "#E8A33D"), ("gen_h2", "Green hydrogen", "#34A585")]:
+        for col, name, cl in [("gen_organic", "Organic demand", "#4F9BF5"), ("gen_ev_dc", "EVs + data centres", "#F5B83D"), ("gen_elec", "Heat + cooking", "#E07A5F"), ("gen_h2", "Green hydrogen", "#3CC5A8")]:
             fig.add_scatter(x=nb.index, y=nb[col], stackgroup="one", name=name, line=dict(color=cl))
         fig.update_layout(height=380, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh generated", legend=dict(orientation="h", y=-0.2), hovermode="x unified")
         st.plotly_chart(fig, width="stretch", key="c6")
@@ -274,8 +257,8 @@ with tabs[1]:
         rh = csv("v2_regional_requirement_history.csv")
         rh = rh[rh.fy_end_year == 2026].set_index("cea_region").reindex(REG) / 1e3
         fig = go.Figure()
-        fig.add_bar(x=REG, y=rh.generation, name="Generated in region", marker_color="#3A86C8")
-        fig.add_bar(x=REG, y=rh.requirement, name="Requirement (generation + net imports)", marker_color="#D0587E")
+        fig.add_bar(x=REG, y=rh.generation, name="Generated in region", marker_color="#4F9BF5")
+        fig.add_bar(x=REG, y=rh.requirement, name="Requirement (generation + net imports)", marker_color="#F5B83D")
         fig.update_layout(barmode="group", height=360, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh, FY2025-26", legend=dict(orientation="h", y=-0.2))
         st.plotly_chart(fig, width="stretch", key="c7")
         st.caption("A region's production requirement is what was generated in it plus what it imported from other regions "
@@ -284,7 +267,7 @@ with tabs[1]:
         st.subheader("By region")
         rr = reg[reg.fy_end.isin([2030, 2035, 2040, 2047])].pivot(index="region", columns="fy_end", values="gen_total_twh").reindex(REG)
         fig = go.Figure()
-        for y, cl in zip(rr.columns, ["#C8CDD6", "#B07D3A", "#3A86C8", "#D0587E"]):
+        for y, cl in zip(rr.columns, ["#5A6B84", "#A88BFA", "#4F9BF5", "#F5B83D"]):
             fig.add_bar(x=REG, y=rr[y], name=f"FY{str(y)[2:]}", marker_color=cl)
         fig.update_layout(barmode="group", height=360, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh generated", legend=dict(orientation="h", y=-0.2))
         st.plotly_chart(fig, width="stretch", key="c8")
@@ -339,11 +322,14 @@ with tabs[2]:
         with r:
             st.subheader("Regional mix (TWh)")
             st.plotly_chart(stacked_regions(G), width="stretch", key="c11")
+        st.subheader("This scenario on the map")
+        viz.grid_map_3d(G, o["demand"], o["flows"], SRC, LAB, height=460, key="mix_map")
+        st.caption("Height = electricity generated in 2047 under the settings above. Arcs = net power traded between regions. Hover a region for its mix.")
         l, r = st.columns(2)
         with l:
             st.subheader("Who exports, who imports")
             net = (G.sum(axis=1) - o["demand"]).reindex(REG)
-            fig = go.Figure(go.Bar(x=net.values, y=REG, orientation="h", marker_color=["#34A585" if v > 0 else "#C9821B" for v in net.values],
+            fig = go.Figure(go.Bar(x=net.values, y=REG, orientation="h", marker_color=["#3CC5A8" if v > 0 else "#E07A5F" for v in net.values],
                                    hovertemplate="%{y}: %{x:+,.0f} TWh<extra></extra>"))
             fig.update_layout(height=300, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Net export, TWh", yaxis=dict(autorange="reversed"))
             st.plotly_chart(fig, width="stretch", key="c12")
@@ -430,8 +416,8 @@ with tabs[4]:
     st.subheader("What moves the 2047 demand most (one driver at a time)")
     tor = csv("v2_tornado.csv").sort_values("span")
     fig = go.Figure()
-    fig.add_bar(y=tor.driver, x=tor.low, orientation="h", name="Low value", marker_color="#B8BFCB")
-    fig.add_bar(y=tor.driver, x=tor.high, orientation="h", name="High value", marker_color="#2A7F8F")
+    fig.add_bar(y=tor.driver, x=tor.low, orientation="h", name="Low value", marker_color="#5A6B84")
+    fig.add_bar(y=tor.driver, x=tor.high, orientation="h", name="High value", marker_color="#3CC5A8")
     fig.update_layout(barmode="overlay", height=380, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Change vs base, TWh", legend=dict(orientation="h", y=-0.2))
     st.plotly_chart(fig, width="stretch", key="c21")
 
@@ -442,8 +428,8 @@ with tabs[5]:
         st.subheader("Backcast: the optimiser on FY26's fleet and demand")
         bk = csv("backcast_fy26.csv"); n_ = bk[bk.region == "India"].set_index("source")
         fig = go.Figure()
-        fig.add_bar(x=[LAB[s] for s in SRC], y=n_.loc[SRC, "actual_twh"], name="Actual (CEA)", marker_color="#B8BFCB")
-        fig.add_bar(x=[LAB[s] for s in SRC], y=n_.loc[SRC, "model_twh"], name="Model", marker_color="#3A86C8")
+        fig.add_bar(x=[LAB[s] for s in SRC], y=n_.loc[SRC, "actual_twh"], name="Actual (CEA)", marker_color="#5A6B84")
+        fig.add_bar(x=[LAB[s] for s in SRC], y=n_.loc[SRC, "model_twh"], name="Model", marker_color="#4F9BF5")
         fig.update_layout(barmode="group", height=330, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh", legend=dict(orientation="h", y=-0.2))
         st.plotly_chart(fig, width="stretch", key="c22")
         st.caption("Regional coal is placed within 6% of national coal. Gas runs on contracts in reality, which a least-cost model does not see.")

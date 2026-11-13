@@ -46,3 +46,6 @@ Built 6 Nov 2026. Rebuild everything and re-run all checks with: `python data/va
 - **Region-wise conventional generation FY19-FY26**: CEA 18-column monthly generation report, sub-report 2, March issues, via National Power Portal, e.g. https://npp.gov.in/public-reports/cea/monthly/generation/18_col_act/2026/MAR/18_col_act-2_2026-MAR.pdf
 - **Region-wise RE generation FY19-FY26**: CEA Monthly RE Generation Reports (March issues), e.g. https://cea.nic.in/wp-content/uploads/resd/2025/03/Monthly_RE_Generation_Report_March_2025.docx.pdf ; https://cea.nic.in/old/reports/monthly/renewable/2020/renewable-03.pdf ; Broad Overview of RE Generation March 2026. FY21 interpolated (report offline) and scaled to the MoP national total.
 - **Net inter-regional exchange FY24-FY26**: Grid-India statistics as reported by T&D India (26 Apr 2024, 7 May 2025, 28 Apr 2026). Unpublished NER values set to 0; Western FY24 and Eastern FY26 as residuals.
+
+## Maps
+- State boundaries: DataMeet India maps (`website/docs/data/geojson/states.geojson`, github.com/datameet/maps, CC BY 4.0), simplified to `data/geo/india_states.geojson`; regions are unions of states by CEA grid region (`data/geo/india_regions.geojson`, island territories omitted from the 3D view).
