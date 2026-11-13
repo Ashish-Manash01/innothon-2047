@@ -50,6 +50,6 @@ psp_existing_uc_gw,23.3,GW,7.43 operating + 15.87 under construction (PIB Aug-20
 bess_hours,4,hours,
 bess_eff,0.88,share,Round-trip efficiency
 storage_need_cea_2047_gw,476,GW,CEA PSP roadmap: all-India storage requirement 2046-47 (benchmark)
-solar_cap_2047_gw,1279,GW,"Build-rate cap: CEA 2035-36 projection 509 GW + 11 yr x 70 GW/yr (record FY26: 44.6 GW; module mfg 172 GW/yr)"
-wind_cap_2047_gw,375,GW,"Build-rate cap: CEA 2035-36 projection 155 GW + 11 yr x 20 GW/yr (record FY26: 6.05 GW; turbine mfg 24 GW/yr)"
+solar_cap_2047_gw,1407,GW,"Build-rate cap: CEA 2035-36 projection 509 GW + 11 yr x ~82 GW/yr (record FY26: 44.6 GW; module mfg 172 GW/yr). Raised 10% on 13 Nov: at the generation-based demand, 70 GW/yr cannot hold 1.2 Gt"
+wind_cap_2047_gw,412,GW,"Build-rate cap: CEA 2035-36 projection 155 GW + 11 yr x ~23 GW/yr (record FY26: 6.05 GW; turbine mfg 24 GW/yr). Raised 10% on 13 Nov with solar"
 hydro_cap_2047_gw,111,GW,"Build-rate cap: CEA 2035-36 projection 78 GW + 11 yr x 3 GW/yr (large hydro 51.4 GW in Mar-2026)"

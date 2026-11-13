@@ -2,7 +2,7 @@
 
 Run locally:  streamlit run streamlit_app.py
 Every number is computed live by the project's own models:
-  model/demand_v1.py  state panel demand model      model/regional.py  roll-up to CEA regions
+  model/demand_gen.py generation-only demand model  model/regional.py  roll-up to CEA regions
   model/mix_lp.py     least-cost regional mix (LP)  model/pathway.py   FY30/35/40/47 milestones
 Metric throughout: electricity GENERATED (TWh), FY2046-47.
 """
@@ -33,9 +33,9 @@ fmt0 = lambda v: f"{v:,.0f}"
 
 
 # ------------------------------------------------------------------ models (cached)
-@st.cache_resource(show_spinner="Loading models and fitting the state panel…")
+@st.cache_resource(show_spinner="Loading models and fitting the generation model…")
 def models():
-    import demand_v1 as dm
+    import demand_gen as dm
     import mix_lp as M
     import regional as R
     import pathway as PW
@@ -97,19 +97,19 @@ def csv(name, folder="out"):
 hist = csv("national_history.csv", "data").set_index("fy_end_year")
 states = csv("state_master.csv", "data")
 fy26_reg = csv("region_generation_fy26.csv", "data").set_index("cea_region")
-mcq = csv("v1_mc_quantiles_2047.csv").set_index("Unnamed: 0")
-mc = csv("v1_montecarlo.csv")
+mcq = csv("v2_mc_quantiles_2047.csv").set_index("Unnamed: 0")
+mc = csv("v2_montecarlo.csv")
 
 # ------------------------------------------------------------------ sidebar: demand assumptions
 st.sidebar.title("Demand assumptions")
-st.sidebar.caption("Every change re-runs the state demand model, the regional split, the optimiser and the pathway.")
+st.sidebar.caption("Every change re-runs the generation demand model, the regional split, the optimiser and the pathway. All forecasting uses energy generated only.")
 base = dm.SCEN["Base"]
 EV = {"Slow": dm.ev_2047("low"), "Base": dm.ev_2047("base"), "Fast": dm.ev_2047("high")}
 ELEC = {"Off": (0.0, 0.0), "Low": dm.elec_2047("low"), "Base": dm.elec_2047("base"), "High": dm.elec_2047("high")}
 
 
 def reset():
-    for k, v in dict(gdp=6.5, b=round(float(dm.B_HAT), 3), k=0.75, pop=1665, ev="Base", dc=250, h2=12.0, bridge=1.06, elec="Off").items():
+    for k, v in dict(gdp=6.5, b=round(float(dm.B_HAT), 3), k=0.75, pop=1665, ev="Base", dc=250, h2=12.0, bridge=1.10, elec="Off").items():
         st.session_state[k] = v
 
 
@@ -117,7 +117,7 @@ if "gdp" not in st.session_state:
     reset()
 gdp = st.sidebar.slider("Real GDP growth, % a year", 4.5, 8.5, key="gdp", step=0.1)
 b = st.sidebar.slider("Income elasticity of electricity use", 0.50, 1.00, key="b", step=0.01,
-                      format="%.3f", help=f"Estimated {dm.B_HAT:.3f} (SE {dm.B_SE:.3f}) from a 32-state fixed-effects panel")
+                      format="%.3f", help=f"Estimated {dm.B_HAT:.3f} (SE {dm.B_SE:.3f}) from national generation per person vs GDP per person, FY11–FY26 (growth on growth); levels cross-check {dm.B_LEVELS:.3f}")
 k = st.sidebar.slider("Elasticity in 2047 as share of today's (maturing demand)", 0.50, 1.00, key="k", step=0.05)
 pop = st.sidebar.slider("Population 2047, million", 1550, 1780, key="pop", step=5, help="UN WPP 2024 medium: 1,665 million")
 ev = st.sidebar.select_slider("Electric-vehicle adoption", ["Slow", "Base", "Fast"], key="ev")
@@ -125,9 +125,10 @@ dc = st.sidebar.slider("Data centres in 2047, TWh", 80, 450, key="dc", step=10)
 h2 = st.sidebar.slider("Green hydrogen in 2047, Mt a year", 0.0, 30.0, key="h2", step=0.5)
 elec = st.sidebar.select_slider("Extra electrification: industrial heat + cooking", list(ELEC), key="elec",
                                 help="Policy-driven switch of low-temperature industrial heat (<150 °C) and LPG cooking to electricity, "
-                                     "beyond the historical trend. 2047 consumption, TWh: Low 35 + 9, Base 139 + 37, High 314 + 94. "
+                                     "beyond the historical trend. 2047 end-use TWh: Low 35 + 9, Base 139 + 37, High 314 + 94. "
                                      "Off in the headline forecast; see the Assumptions tab for the sizing.")
-bridge = st.sidebar.slider("Generation ÷ consumption ratio in 2047", 1.03, 1.09, key="bridge", step=0.005)
+bridge = st.sidebar.slider("Generation needed per TWh of new load, 2047", 1.04, 1.18, key="bridge", step=0.01,
+                           help="Delivery factor for EVs, data centres and electrification: transmission & distribution losses plus power-plant auxiliary use.")
 st.sidebar.button("Reset to base case", on_click=reset)
 
 P = dict(base, gdp=gdp / 100, b=(float(dm.B_HAT) if abs(b - round(float(dm.B_HAT), 3)) < 1e-9 else b), k=k, pop_2047=pop, ev_twh_2047=EV[ev], dc_twh_2047=dc,
@@ -236,9 +237,9 @@ with tabs[0]:
     with r:
         st.subheader("Each region's role in 2047")
         G = o["gen"]; net = G.sum(axis=1) - o["demand"]
-        tbl = pd.DataFrame({"Generation TWh": G.sum(axis=1), "Demand TWh": o["demand"], "Net export TWh": net,
+        tbl = pd.DataFrame({"Generation TWh": G.sum(axis=1), "Requirement TWh": o["demand"], "Net export TWh": net,
                             **{f"{LAB[s]} %": G[s] / G.sum(axis=1) * 100 for s in SRC}}).reindex(REG)
-        st.dataframe(tbl.style.format("{:,.0f}", subset=["Generation TWh", "Demand TWh", "Net export TWh"]).format("{:.1f}", subset=[f"{LAB[s]} %" for s in SRC]),
+        st.dataframe(tbl.style.format("{:,.0f}", subset=["Generation TWh", "Requirement TWh", "Net export TWh"]).format("{:.1f}", subset=[f"{LAB[s]} %" for s in SRC]),
                      width="stretch", key="c4")
         st.markdown("- **Northern:** Rajasthan solar hub plus Himalayan hydro; exports midday solar.\n"
                     "- **Western:** coastal wind, large solar and the cheapest pithead coal (Chhattisgarh, Madhya Pradesh).\n"
@@ -269,12 +270,16 @@ with tabs[1]:
         st.plotly_chart(fig, width="stretch", key="c6")
     l, r = st.columns([1, 1.2])
     with l:
-        st.subheader("Demand growth by state, FY26 → FY47")
-        s26 = stt[stt.fy_end == 2026].set_index("code").req_twh; s47 = stt[stt.fy_end == 2047].set_index("code").req_twh
-        metric = st.radio("Colour by", ["2047 requirement (TWh)", "Growth multiple"], horizontal=True, key="mapm")
-        vals = (s47 if metric.startswith("2047") else (s47 / s26)).to_dict()
-        st.plotly_chart(tile_map(vals, "TWh" if metric.startswith("2047") else "× FY26", fmt=(fmt0 if metric.startswith("2047") else (lambda v: f"{v:.2f}×"))),
-                        width="stretch", key="c7")
+        st.subheader("Where the requirement comes from (FY24–FY26)")
+        rh = csv("v2_regional_requirement_history.csv")
+        rh = rh[rh.fy_end_year == 2026].set_index("cea_region").reindex(REG) / 1e3
+        fig = go.Figure()
+        fig.add_bar(x=REG, y=rh.generation, name="Generated in region", marker_color="#3A86C8")
+        fig.add_bar(x=REG, y=rh.requirement, name="Requirement (generation + net imports)", marker_color="#D0587E")
+        fig.update_layout(barmode="group", height=360, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh, FY2025-26", legend=dict(orientation="h", y=-0.2))
+        st.plotly_chart(fig, width="stretch", key="c7")
+        st.caption("A region's production requirement is what was generated in it plus what it imported from other regions "
+                   "(Grid-India inter-regional exchange). Generation data only: NPP/CEA monthly reports.")
     with r:
         st.subheader("By region")
         rr = reg[reg.fy_end.isin([2030, 2035, 2040, 2047])].pivot(index="region", columns="fy_end", values="gen_total_twh").reindex(REG)
@@ -283,17 +288,16 @@ with tabs[1]:
             fig.add_bar(x=REG, y=rr[y], name=f"FY{str(y)[2:]}", marker_color=cl)
         fig.update_layout(barmode="group", height=360, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh generated", legend=dict(orientation="h", y=-0.2))
         st.plotly_chart(fig, width="stretch", key="c8")
-    st.subheader("Trace the forecast for one state")
-    names = states.set_index("code").state
-    codes = [c for c in stt.code.unique() if c in names.index]
-    sc = st.selectbox("State or union territory", codes, format_func=lambda c: f"{names[c]} ({c})", index=codes.index("KA") if "KA" in codes else 0)
-    t = stt[stt.code == sc].set_index("fy_end")[["pop_k", "urban", "kwh_pc", "req_twh"]]
-    t.columns = ["Population (thousand)", "Urban %", "kWh per person", "Requirement TWh"]
-    st.caption(f"Each year: kWh per person grows with income per person at elasticity b × (fading to {k:.2f}·b by 2047), "
-               f"adjusted for urbanisation (coefficient {dm.C_HAT:.4f}); requirement = population × kWh per person. "
-               "New loads (EVs, data centres, hydrogen) are added at regional level.")
+    st.subheader("Trace the forecast for one region")
+    sc = st.selectbox("CEA region", REG, index=2)
+    t = stt[stt.region == sc].set_index("fy_end")[["pop_k", "urban", "gsdp_index", "kwh_gen_pc", "organic_twh"]]
+    t["gsdp_index"] = t.gsdp_index / t.gsdp_index.iloc[0] * 100
+    t.columns = ["Population (thousand)", "Urban %", "Real GSDP (FY26 = 100)", "kWh generated per person", "Requirement before new loads, TWh"]
+    st.caption(f"Each year: kWh generated per person grows with the region's real GSDP per person at elasticity b = {b:.3f} "
+               f"(fading to {k:.2f}·b by 2047); requirement = population × kWh per person. FY26 starts from the region's share "
+               "of national generation (own generation + net imports, FY24–26 average). New loads are added on top.")
     st.dataframe(t.loc[[2026, 2030, 2035, 2040, 2047]].style.format("{:,.1f}"), width="stretch", key="c9")
-    st.download_button("Download all states × years (CSV)", stt.to_csv(index=False).encode(), "state_demand_forecast.csv")
+    st.download_button("Download all regions × years (CSV)", stt.to_csv(index=False).encode(), "regional_demand_forecast.csv")
 
 # ================================================================== MIX
 with tabs[2]:
@@ -301,7 +305,7 @@ with tabs[2]:
     c = st.columns(3)
     co2 = c[0].slider("CO₂ cap, Mt", 600, 2000, 1200, 50, help="Today ≈ 1,200 Mt. Draft-NEP-like ≈ 1,700 Mt.")
     nuc = c[1].selectbox("Nuclear policy", ["Least cost (≤ 100 GW)", "Mission (100 GW)", "Delayed (≤ 50 GW)"])
-    rem = c[2].slider("Solar & wind build speed", 0.6, 1.4, 1.0, 0.05, help="1.0 = 1,279 GW solar and 375 GW wind by 2047")
+    rem = c[2].slider("Solar & wind build speed", 0.6, 1.4, 1.0, 0.05, help=f"1.0 = {M.A.solar_cap_2047_gw:,.0f} GW solar and {M.A.wind_cap_2047_gw:,.0f} GW wind by 2047")
     c = st.columns(3)
     tx = c[0].slider("Inter-regional transmission × today", 1.0, 5.0, 3.0, 0.5)
     sto = c[1].slider("Storage cost × 2026", 0.5, 2.0, 1.0, 0.1)
@@ -364,7 +368,7 @@ with tabs[2]:
         if st.button("Save this setting for comparison"):
             st.session_state.setdefault("saved", []).append({
                 "Scenario": f"GDP {gdp}%, b {b}, H₂ {h2} Mt, elec {elec} | CO₂ {co2}, {nuc.split(' (')[0]}, build ×{rem}, tx ×{tx}",
-                "Demand TWh": tot, **{f"{LAB[s]} %": G[s].sum() / G.sum().sum() * 100 for s in SRC},
+                "Requirement TWh": tot, **{f"{LAB[s]} %": G[s].sum() / G.sum().sum() * 100 for s in SRC},
                 "Non-fossil %": S["non_fossil_%"], "CO₂ Mt": S["co2_mt"], "₹/kWh": S["cost_rs_per_kwh"],
                 "Unserved TWh": o["unserved"], "Over cap Mt": o["co2_excess"]})
             st.success("Saved. See the Compare scenarios tab.")
@@ -411,7 +415,7 @@ with tabs[4]:
     refs = []
     for name, kw in [("Base: CO₂ 1.2 Gt", (1200, 100, 0)), ("Draft-NEP-like: CO₂ 1.7 Gt", (1700, 100, 0))]:
         oo = run_mix(BKEY, kw[0], kw[1], kw[2], 1.0, 3.0, 1.0, 1.0); G = oo["gen"]; Sx = oo["summary"]
-        refs.append({"Scenario": name, "Demand TWh": nb0.loc[2047, "gen_total"], **{f"{LAB[s]} %": G[s].sum() / G.sum().sum() * 100 for s in SRC},
+        refs.append({"Scenario": name, "Requirement TWh": nb0.loc[2047, "gen_total"], **{f"{LAB[s]} %": G[s].sum() / G.sum().sum() * 100 for s in SRC},
                      "Non-fossil %": Sx["non_fossil_%"], "CO₂ Mt": Sx["co2_mt"], "₹/kWh": Sx["cost_rs_per_kwh"], "Unserved TWh": oo["unserved"], "Over cap Mt": oo["co2_excess"]})
     comp = pd.DataFrame(refs + st.session_state.get("saved", [])).set_index("Scenario")
     st.dataframe(comp.style.format("{:,.1f}"), width="stretch", key="c19")
@@ -424,7 +428,7 @@ with tabs[4]:
     if st.session_state.get("saved") and st.button("Clear saved scenarios"):
         st.session_state["saved"] = []; st.rerun()
     st.subheader("What moves the 2047 demand most (one driver at a time)")
-    tor = csv("v1_tornado.csv").sort_values("span")
+    tor = csv("v2_tornado.csv").sort_values("span")
     fig = go.Figure()
     fig.add_bar(y=tor.driver, x=tor.low, orientation="h", name="Low value", marker_color="#B8BFCB")
     fig.add_bar(y=tor.driver, x=tor.high, orientation="h", name="High value", marker_color="#2A7F8F")
@@ -447,11 +451,11 @@ with tabs[5]:
     with r:
         st.subheader("Against official and published numbers")
         st.dataframe(pd.read_csv(OUT / "dash" / "benchmarks.csv"), width="stretch", hide_index=True)
-        st.subheader("Income elasticity: four specifications")
-        st.dataframe(csv("panel_coefficients.csv"), width="stretch", hide_index=True)
-        st.caption("Realised FY18→FY26 elasticity: 0.694. Out-of-sample error FY24–26: regression 9.2%, gradient boosting 16.3%, last-value 8.8%.")
+        st.subheader("Model coefficients (generation basis)")
+        st.dataframe(csv("v2_coefficients.csv"), width="stretch", hide_index=True)
+        st.caption("Back-test on generation: elasticity fitted to FY11–FY19 only predicts FY24 and FY25 within about 1% (FY26, a cool wet year, +6%); a naive trend misses by 5–10%.")
     st.subheader("Demand model tests")
-    st.dataframe(csv("v1_tests.csv"), width="stretch", hide_index=True)
+    st.dataframe(csv("v2_tests.csv"), width="stretch", hide_index=True)
 
 # ================================================================== ASSUMPTIONS
 with tabs[6]:

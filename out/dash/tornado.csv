@@ -1,9 +1,9 @@
 driver,low,high,span
-Population 2047 (1.60 / 1.72 bn),-67.0,55.0,122.0
-Gen/requirement bridge (1.045 / 1.075),-70.0,70.0,141.0
-Data centres (120 / 380 TWh),-138.0,138.0,276.0
-Elasticity decay k (0.60 / 0.90),-269.0,287.0,556.0
-EV fleet (186 / 977 TWh),-290.0,549.0,839.0
-GDP growth (5.5% / 7.5%),-472.0,526.0,997.0
-Income elasticity (0.62 / 0.85),-292.0,767.0,1060.0
+Delivery factor for new loads (1.08 / 1.14),-13.0,27.0,40.0
+Population 2047 (1.60 / 1.72 bn),-63.0,51.0,114.0
+Data centres (120 / 380 TWh),-143.0,143.0,286.0
+Elasticity decay k (0.60 / 0.90),-327.0,352.0,679.0
+EV fleet (186 / 977 TWh),-301.0,570.0,870.0
+Income elasticity (0.66 / 0.86),-474.0,529.0,1003.0
 Green H2 (5 / 25 Mt),-358.0,738.0,1096.0
+GDP growth (5.5% / 7.5%),-573.0,646.0,1219.0

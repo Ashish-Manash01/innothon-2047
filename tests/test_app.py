@@ -25,10 +25,10 @@ at = AppTest.from_file(APP, default_timeout=300)
 run("Initial load (base case)", at)
 hdr = [m.value for m in at.markdown if "TWh** of electricity" in m.value][0]
 print("     header:", hdr[:160])
-assert "5,553 TWh" in hdr, "base total should be 5,553 TWh"
+assert "6,030 TWh" in hdr, "base total should be 6,030 TWh"
 m = {x.label: x.value for x in at.metric}
 print("     metrics:", {k: m[k] for k in list(m)[:6]})
-assert m["Non-fossil share 2047"].startswith("77.6"), m["Non-fossil share 2047"]
+assert m["Non-fossil share 2047"].startswith("79.1"), m["Non-fossil share 2047"]
 
 # demand sliders
 at.slider(key="gdp").set_value(7.5); run("GDP 7.5%", at)
@@ -47,10 +47,9 @@ sl["Solar & wind build speed"].set_value(0.7); run("Build speed 0.7", at)
 print("     warnings:", [w.value[:90] for w in at.warning])
 at.button[[b.label for b in at.button].index("Save this setting for comparison")].click(); run("Save scenario", at)
 at.button[[b.label for b in at.button].index("Reset to base case")].click(); run("Reset demand", at)
-assert "5,553 TWh" in [m.value for m in at.markdown if "TWh** of electricity" in m.value][0]
-sel = [s for s in at.selectbox if s.label == "State or union territory"][0]
-sel.set_value("UP"); run("Trace Uttar Pradesh", at)
-at.radio[0].set_value("Growth multiple"); run("Map: growth multiple", at)
+assert "6,030 TWh" in [m.value for m in at.markdown if "TWh** of electricity" in m.value][0]
+sel = [s for s in at.selectbox if s.label == "CEA region"][0]
+sel.set_value("Eastern"); run("Trace Eastern region", at)
 at.text_input[0].set_value("solar"); run("Search assumptions", at)
 ss = [s for s in at.select_slider if s.label == "Year"][0]; ss.set_value(2030); run("Pathway year 2030", at)
 print("\nAll passed" if not fails else f"\n{len(fails)} failed: {fails}")

@@ -19,7 +19,7 @@ TOL = 0.02
 # our table -> (key columns, value columns) that an official table might share. Column names are matched loosely.
 OURS = {
     "national_history.csv": (["fy_end_year"], ["generation_bu", "population_mn", "gdp_cr_2011_12"]),
-    "state_energy_requirement.csv": (["code", "fy_end_year"], ["requirement_mu"]),
+    "region_generation_history.csv": (["cea_region", "fy_end_year"], ["generation_mu"]),
     "region_generation_fy26.csv": (["cea_region"], ["coal_lignite", "gas", "nuclear", "hydro", "solar", "wind"]),
     "region_capacity_mar26.csv": (["cea_region"], ["coal", "gas", "nuclear", "hydro"]),
     "state_master.csv": (["code"], ["pop_2026_k"]),

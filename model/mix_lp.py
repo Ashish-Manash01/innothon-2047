@@ -83,10 +83,10 @@ CC = {"coal": 0.85, "gas": 0.90, "nuclear": 0.85, "hydro": 0.60, "solar": 0.05, 
 
 
 def demand_2047(which="base"):
-    r = pd.read_csv(OUT / "v1_regional_2047_base.csv", index_col=0).drop(index="India")
+    r = pd.read_csv(OUT / "v2_regional_2047_base.csv", index_col=0).drop(index="India")
     grid, h2 = r.gen_grid_2047_twh.reindex(REG), r.gen_h2_2047_twh.reindex(REG)
     if which != "base":
-        q = pd.read_csv(OUT / "v1_mc_quantiles_2047.csv", index_col=0)
+        q = pd.read_csv(OUT / "v2_mc_quantiles_2047.csv", index_col=0)
         grid = grid * q.loc["gen_grid_2047", which] / grid.sum(); h2 = h2 * q.loc["gen_h2_2047", which] / h2.sum()
     return grid, h2
 

@@ -1,4 +1,4 @@
-"""Build data/techno_economics.csv and data/generation_requirement_bridge.csv.
+"""Build data/techno_economics.csv (optimiser inputs).
 
 1) Capacity factors: DERIVED from our own FY26 data (generation / average installed capacity), so they are
    consistent with the dataset rather than borrowed from literature. 2047 values are stated assumptions.
@@ -42,16 +42,5 @@ te = pd.DataFrame(rows, columns=["source", "cf_fy26_derived", "cf_2047_assumed",
 te["cf_fy26_derived"] = te.cf_fy26_derived.round(3)
 te.to_csv(D / "techno_economics.csv", index=False)
 
-# ---- Bridge: gross generation (TWh) / energy requirement (TWh)
-nat = pd.read_csv(D / "national_history.csv").set_index("fy_end_year")
-REQ = {2014: 1002.257, 2015: 1068.923, 2016: 1114.408, 2017: 1142.928, 2018: 1213.326, 2019: 1274.595,
-       2020: 1291.010, 2021: 1275.534, 2022: 1379.812, 2023: 1513.497, 2024: 1626.132, 2025: 1695.188,
-       2026: 1707.493}
-br = pd.DataFrame({"generation_twh": nat.generation_bu, "requirement_twh": pd.Series(REQ)}).dropna()
-br["gen_over_req"] = (br.generation_twh / br.requirement_twh).round(4)
-br.to_csv(D / "generation_requirement_bridge.csv")
-
 print("FY26 derived capacity factors:", {k: round(v, 3) for k, v in cf.items()})
 print("Check: coal+gas+nuclear+hydro+solar+wind FY26 =", round(sum(gen_fy26.values()), 1), "TWh (+bio 17.1, SHP 12.0, Bhutan 7.8)")
-print("\nGeneration / requirement ratio:\n", br.gen_over_req.to_string())
-print("Mean FY22-FY26:", round(br.loc[2022:2026, "gen_over_req"].mean(), 4))

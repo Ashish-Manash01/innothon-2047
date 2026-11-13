@@ -1,11 +1,12 @@
 item,value,unit,basis,model
-Income elasticity b (panel FE),0.689,-,"State fixed-effects panel, 32 states x 11 yrs, SE 0.075",demand
-Urbanisation coefficient c,-0.0034,per pp,"Same panel, SE 0.0033 (not significant; income absorbs it)",demand
+Income elasticity of generation per person b,0.761,-,"National generation FY11-26, growth-on-growth with COVID dummies, SE 0.104; levels FY16-26 0.837",demand
+Urbanisation coefficient c,0.0,per pp,"Tested: 0.068 (SE 0.077), not significant beyond income -> 0",demand
+Regional requirement shares (FY24-26),Northern 0.297; Western 0.310; Southern 0.257; Eastern 0.124; North-Eastern 0.012,share,"Own generation + net inter-regional imports (NPP/CEA, Grid-India)",demand
 Elasticity decay k (b falls to k*b by 2047),0.75,-,Maturing demand; realised FY18-26 elasticity 0.694,demand
 "GDP growth (real, base)",6.5,%/yr,Scenario 5.5-7.5%,demand
-Population 2047,1665.0,million,UN WPP 2024 medium variant,demand
-Generation / requirement bridge 2047,1.06,ratio,"FY22-26 mean 1.077, falling as RE has low auxiliary use",demand
-Base year FY26 (weather-smoothed),1916.0,TWh gen,Fitted + mean residual FY24-26 (+4.2% vs actual hot/cool-year noise),demand
+Population 2047,1665,million,UN WPP 2024 medium variant,demand
+Delivery factor for new end-use loads 2047,1.1,TWh gen per TWh end use,"1.12 today falling to 1.10: T&D losses + auxiliary use (assumption, range 1.08-1.14)",demand
+Base year FY26 (weather-smoothed),1892,TWh gen,Mean of actual 1848 and FY23-based trend 1936,demand
 ev: two_wheelers_stock_2047,350,million,Assumption: ~1 per 4.8 people in 2047 (vs ~230 mn registered 2W today),demand (new loads)
 ev: two_wheelers_ev_share,0.8,share,Assumption; 2W electrification fastest (EV30@30 trajectory),demand (new loads)
 ev: two_wheelers_kwh_per_vehicle,300,kWh/yr,~10000 km/yr at ~3 kWh/100 km,demand (new loads)
@@ -87,6 +88,6 @@ psp_existing_uc_gw,23.3,GW,7.43 operating + 15.87 under construction (PIB Aug-20
 bess_hours,4.0,hours,,mix
 bess_eff,0.88,share,Round-trip efficiency,mix
 storage_need_cea_2047_gw,476.0,GW,CEA PSP roadmap: all-India storage requirement 2046-47 (benchmark),mix
-solar_cap_2047_gw,1279.0,GW,Build-rate cap: CEA 2035-36 projection 509 GW + 11 yr x 70 GW/yr (record FY26: 44.6 GW; module mfg 172 GW/yr),mix
-wind_cap_2047_gw,375.0,GW,Build-rate cap: CEA 2035-36 projection 155 GW + 11 yr x 20 GW/yr (record FY26: 6.05 GW; turbine mfg 24 GW/yr),mix
+solar_cap_2047_gw,1407.0,GW,"Build-rate cap: CEA 2035-36 projection 509 GW + 11 yr x ~82 GW/yr (record FY26: 44.6 GW; module mfg 172 GW/yr). Raised 10% on 13 Nov: at the generation-based demand, 70 GW/yr cannot hold 1.2 Gt",mix
+wind_cap_2047_gw,412.0,GW,Build-rate cap: CEA 2035-36 projection 155 GW + 11 yr x ~23 GW/yr (record FY26: 6.05 GW; turbine mfg 24 GW/yr). Raised 10% on 13 Nov with solar,mix
 hydro_cap_2047_gw,111.0,GW,Build-rate cap: CEA 2035-36 projection 78 GW + 11 yr x 3 GW/yr (large hydro 51.4 GW in Mar-2026),mix

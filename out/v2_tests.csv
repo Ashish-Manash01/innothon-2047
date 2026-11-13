@@ -1,0 +1,25 @@
+test,result,detail
+Regions + Bhutan = national generation (FY19-26),PASS,max gap 0.045%
+Net inter-regional flows balance within 2 TWh,PASS,max imbalance 980 MU
+Regional requirement = national generation,PASS,"{2024: 1739.1, 2025: 1828.9, 2026: 1847.9}"
+Base year = smoothed FY26,PASS,1892.1 vs 1892.1
+Smoothed base within 5% of actual FY26,PASS,1892 vs actual 1848
+Zero GDP growth -> per-capita generation does not rise,PASS,1293 -> 1175 kWh
+Zero new loads -> EV/DC adder ~0,PASS,0.00 TWh
+Year-1 regional elasticity = b_t,PASS,expected 0.7520
+H2 units: 12 Mt x 48 kWh/kg = 576 TWh,PASS,576.0
+"Population FY2047 = 1,665 mn",PASS,1665.0
+Regions sum to national organic (all years),PASS,
+Regional roll-up = national total,PASS,
+Monotone in gdp,PASS,5735 -> 6343
+Monotone in b,PASS,5744 -> 6221
+Monotone in pop_2047,PASS,5996 -> 6063
+Monotone in h2_mt_2047,PASS,5834 -> 6225
+Monotone in k,PASS,5918 -> 6144
+Monotone in bridge_2047,PASS,6016 -> 6043
+"Back-test: b fitted to FY19 only, FY24-26 mean abs error < 5%",PASS,"b=0.824; errors FY24: +0.7%, FY25: +1.0%, FY26: +6.2%"
+"INFO naive trend (FY12-19 growth carried forward), same years",PASS,"FY24: +4.8%, FY25: +5.4%, FY26: +10.4%"
+Levels cross-check elasticity within 2 SE of growth estimate,PASS,0.837 vs 0.761
+Monte Carlo runs complete & finite,PASS,2000 runs
+Electrification layer off by default,PASS,
+Electrification adds (heat+cook) x delivery factor,PASS,+194 TWh

@@ -20,11 +20,11 @@ SCEN = {
     "Transmission x5": dict(tx_mult=5.0),
     "Storage cost +50%": dict(storage_cost_mult=1.5),
     "Solar cost +30%": dict(solar_cost_mult=1.3),
-    "Faster RE build (+25%)": dict(solar_cap=1279*1.25, wind_cap=375*1.25),
-    "Slower RE build (-25%)": dict(solar_cap=1279*0.75, wind_cap=375*0.75),
+    "Faster RE build (+25%)": dict(solar_cap=M.A.solar_cap_2047_gw*1.25, wind_cap=M.A.wind_cap_2047_gw*1.25),
+    "Slower RE build (-25%)": dict(solar_cap=M.A.solar_cap_2047_gw*0.75, wind_cap=M.A.wind_cap_2047_gw*0.75),
     "Demand P10": dict(demand="P10"),
     "Demand P90": dict(demand="P90"),
-    "Demand P90 + build caps x1.23": dict(demand="P90", solar_cap=1279*1.23, wind_cap=375*1.23, hydro_cap=111*1.1),
+    "Demand P90 + build caps x1.23": dict(demand="P90", solar_cap=M.A.solar_cap_2047_gw*1.23, wind_cap=M.A.wind_cap_2047_gw*1.23, hydro_cap=M.A.hydro_cap_2047_gw*1.1),
 }
 
 

@@ -1,22 +1,15 @@
 metric,estimate,value,source
-Total generation 2047 (TWh),"This model, base",5553.0,Demand model v1
-Total generation 2047 (TWh),"This model, Monte Carlo P10",5217.0,"2,000 runs"
-Total generation 2047 (TWh),"This model, Monte Carlo P90",6828.0,"2,000 runs"
-Total generation 2047 (TWh),"Published 2047 scenarios, low",5254.0,Range cited by IFPEN
-Total generation 2047 (TWh),"Published 2047 scenarios, high",6033.0,Range cited by IFPEN
-Energy requirement 2031-32 (TWh),"This model, FY32 requirement",2351.7,Demand model v1
-Energy requirement 2031-32 (TWh),CEA NEP 2022-32,2473.8,"NEP Vol-I, 20th EPS"
-Energy requirement 2026-27 (TWh),"This model, FY27 requirement",1859.0,Demand model v1
-Energy requirement 2026-27 (TWh),CEA LGBR forecast,1887.0,CEA LGBR 2026-27
-Solar 2047 (GW),"This model, base",1279.0,Mix model
-Solar 2047 (GW),CEA indicative 2047,1200.0,"Down To Earth, 2026"
-Wind 2047 (GW),"This model, base",375.0,Mix model
-Wind 2047 (GW),CEA indicative 2047 (low end),400.0,"Down To Earth, 2026"
-Nuclear 2047 (GW),"This model, base",83.0,Mix model
-Nuclear 2047 (GW),Nuclear Energy Mission,100.0,Govt target
-Storage 2047 (GW),"This model, base (BESS+PSP)",503.0,Mix model
-Storage 2047 (GW),CEA storage need 2046-47,476.0,"CEA PSP roadmap, Jan 2026"
-Coal share FY32 / FY30 (%),"This model, FY30",52.7,Pathway
-Coal share FY32 / FY30 (%),"CEA NEP, FY32",50.0,NEP 2022-32 via ORF
-Power CO2 FY32 / FY30 (Mt),"This model, FY30",1173.0,Pathway
-Power CO2 FY32 / FY30 (Mt),"CEA draft NEP, FY32",1180.0,Draft NEP 2022
+Total generation 2047 (TWh),"This model, base",6030,Generation-only demand model
+Total generation 2047 (TWh),"This model, Monte Carlo P10",5351.0,"2,000 runs"
+Total generation 2047 (TWh),"This model, Monte Carlo P90",7251.0,"2,000 runs"
+Total generation 2047 (TWh),"Published 2047 scenarios, low",5254,Range cited by IFPEN
+Total generation 2047 (TWh),"Published 2047 scenarios, high",6033,Range cited by IFPEN
+Generation FY2025-26 (TWh),Actual (MoP),1847.913,"Cool, wet year: +1.0%"
+Generation FY2025-26 (TWh),Weather-smoothed base used,1892.1,Mean of actual and FY23-based trend
+Generation FY2025-26 (TWh),MoP generation programme,2000.4,Power Sector at a Glance
+Back-test FY24-26 (error %),Elasticity fitted to FY19 only,"b=0.824; errors FY24: +0.7%, FY25: +1.0%, FY26: +6.2%",model/test_demand.py
+Back-test FY24-26 (error %),Naive FY12-19 growth carried forward,"FY24: +4.8%, FY25: +5.4%, FY26: +10.4%",model/test_demand.py
+Coal share of generation FY30 / FY32 (%),"This model, FY30",53.1,Pathway
+Coal share of generation FY30 / FY32 (%),"CEA NEP, FY32",50,NEP 2022-32 via ORF
+Power CO2 FY30 / FY32 (Mt),"This model, FY30",1196,Pathway
+Power CO2 FY30 / FY32 (Mt),"CEA draft NEP, FY32",1180,Draft NEP 2022

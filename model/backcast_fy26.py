@@ -5,7 +5,8 @@ transmission and coal minimum-load rules against reality before trusting the 204
 Setup
   - Capacities pinned to CEA 31-03-2026 by region (coal+lignite, gas, nuclear, hydro). Solar & wind capacities set
     so their maximum energy equals actual FY26 solar/wind output by region (curtailment is negligible in FY26).
-  - Regional demand = actual FY26 requirement by region (CEA, states + ISTS residual), scaled so the national total
+  - Regional demand = FY26 regional production requirement on a GENERATION basis (own generation + net inter-regional
+    imports, Grid-India; demand_gen.NEED), scaled so the national total
     equals actual modelled generation (all sources except bio & small hydro, which are netted off as must-run).
   - No new build, no new storage, no CO2 cap, transmission = today's corridors (x1), load factor 0.80, bridge 1.077.
 """
@@ -17,8 +18,8 @@ import mix_lp as M
 
 REG = M.REG
 act = pd.read_csv(M.D / "region_generation_fy26.csv", index_col=0).reindex(REG)
-e = pd.read_csv(M.D / "state_energy_requirement.csv")
-req = e[e.fy_end_year == 2026].groupby("cea_region").requirement_mu.sum().reindex(REG) / 1e3
+import demand_gen as dm
+req = dm.NEED.loc[2026].reindex(REG) / 1e3
 modelled = act[["coal_lignite", "gas", "nuclear", "hydro", "solar", "wind"]].sum(axis=1)
 dem_total = modelled.sum() + M.BHUTAN_TWH
 grid = req / req.sum() * dem_total

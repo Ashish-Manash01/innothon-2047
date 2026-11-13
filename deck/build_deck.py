@@ -8,19 +8,27 @@ OUT = Path(__file__).resolve().parents[1] / "out"
 D = OUT / "dash"
 
 # ------------------------------------------------------------------ data
-nb = pd.read_csv(OUT / "v1_national_base.csv", index_col=0)
+nb = pd.read_csv(OUT / "v2_national_base.csv", index_col=0)
 hist = pd.read_csv(D / "history_national.csv").set_index("fy_end")
-q = pd.read_csv(OUT / "v1_mc_quantiles_2047.csv", index_col=0)
-summ = pd.read_csv(OUT / "v1_summary_2047.csv", index_col=0)
-tor = pd.read_csv(OUT / "v1_tornado.csv").sort_values("span", ascending=False)
-reg_d = pd.read_csv(OUT / "v1_regional_2047_base.csv", index_col=0)
+q = pd.read_csv(OUT / "v2_mc_quantiles_2047.csv", index_col=0)
+summ = pd.read_csv(OUT / "v2_summary_2047.csv", index_col=0)
+tor = pd.read_csv(OUT / "v2_tornado.csv").sort_values("span", ascending=False)
+reg_d = pd.read_csv(OUT / "v2_regional_2047_base.csv", index_col=0)
 g = pd.read_csv(OUT / "mix_base_generation_twh.csv", index_col=0)
 cap = pd.read_csv(OUT / "mix_base_capacity_gw.csv", index_col=0)
 bal = pd.read_csv(OUT / "mix_base_regional_balance.csv", index_col=0)
 path = pd.read_csv(OUT / "pathway_national.csv").set_index("fy_end")
 sc = pd.read_csv(OUT / "mix_scenarios_2047.csv").set_index("scenario")
 bk = pd.read_csv(OUT / "backcast_fy26.csv")
-panel = pd.read_csv(OUT / "panel_coefficients.csv")
+coef = pd.read_csv(OUT / "v2_coefficients.csv").set_index("term")
+A = pd.read_csv(Path(__file__).resolve().parents[1] / "data" / "mix_assumptions.csv").set_index("item").value.astype(str)
+SOLCAP, WINDCAP = float(A["solar_cap_2047_gw"]), float(A["wind_cap_2047_gw"])
+b_g, se_g = coef.loc["b growth-on-growth FY11-26", "estimate"], coef.loc["b growth-on-growth FY11-26", "se"]
+b_l = coef.loc["b levels FY16-26", "estimate"]
+tests = pd.read_csv(OUT / "v2_tests.csv").set_index("test")
+bt = tests.loc[[x for x in tests.index if x.startswith("Back-test")][0], "detail"]
+nv = tests.loc[[x for x in tests.index if x.startswith("INFO naive")][0], "detail"]
+rgh = pd.read_csv(OUT / "v2_regional_requirement_history.csv")
 
 SRC = ["coal", "gas", "nuclear", "hydro", "solar", "wind"]
 LAB = dict(coal="Coal", gas="Gas", nuclear="Nuclear", hydro="Hydro", solar="Solar", wind="Wind")
@@ -80,10 +88,10 @@ section("cover", f'''
 <div style="flex:1"></div>
 <p style="font-size:28px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:{ACC}">ExxonMobil INNOTHON 2026 · Defensibility review</p>
 <h1 style="font-family:{SERIF};font-size:96px;font-weight:600;line-height:1.08;color:{LIGHT}">India will need about {f0(base_total)} TWh of electricity in 2047, and can make {nonfossil:.0f}% of it without fossil fuels</h1>
-<p style="font-size:36px;line-height:1.4;color:#C9D3E3">A state-level demand forecast and a least-cost regional generation plan for FY2046-47</p>
+<p style="font-size:36px;line-height:1.4;color:#C9D3E3">A forecast built on electricity generated, for India and its five grid regions, and a least-cost regional generation plan for FY2046-47</p>
 <div style="flex:1"></div>
 <p style="font-size:28px;color:#A9B4C8">Manash · NIT Karnataka, Surathkal · Final evaluation, 21–22 November 2026</p>''',
-        "Open with the answer. Two numbers to remember: about 5,550 terawatt-hours generated in FY2046-47, three times today, and a mix that is 78 percent non-fossil while holding power-sector emissions at today's level. Everything after this slide is how we got there and why you can trust it.",
+        f"Open with the answer. Two numbers to remember: about {round(base_total, -1):,.0f} terawatt-hours generated in FY2046-47, {mult:.1f} times today, and a mix that is {nonfossil:.0f} percent non-fossil while holding power-sector emissions at today's level. Every number is fitted on energy generated, as the rules require. Everything after this slide is how we got there and why you can trust it.",
         bg=DARK, color=LIGHT, page=False, pad="128px")
 
 # ------------------------------------------------------------------ 2 the answer
@@ -101,32 +109,32 @@ section("answer", title("The answer on one slide", "Summary") + f'''
 {kpi(f"{B.co2_mt/1000:.1f}", "Gt", "Power-sector CO₂ in 2047: held at today's level, a peak-and-plateau path to Net Zero 2070")}
 {kpi(f"₹{B.cost_rs_per_kwh:.2f}", "", "Average system cost per kWh (2026 prices), generation, storage and transmission")}
 </div>''',
-        "The six numbers to anchor on. Demand triples; the band is 5,200 to 6,800; the mix goes from 28 percent non-fossil today to 78 percent; emissions plateau at 1.2 gigatonnes; and the average system cost stays under four rupees a unit, cheaper than new coal.")
+        f"The six numbers to anchor on. Generation rises {mult:.1f} times; the band is {f0(p10)} to {f0(p90)}; the mix goes from 28 percent non-fossil today to {nonfossil:.0f} percent; emissions plateau at 1.2 gigatonnes; and the average system cost stays under four rupees a unit, cheaper than new coal.")
 
 # ------------------------------------------------------------------ 3 approach
 step = lambda n, h, b: (f'<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border:1px solid {RULE};border-top:8px solid {ACC2};border-radius:16px;padding:32px">'
                         f'<p style="font-size:24px;font-weight:600;color:{ACC2}">{n}</p><h3 style="font-size:32px;font-weight:600;color:{DARK}">{h}</h3><p style="font-size:24px;line-height:1.4;color:{MUTED}">{b}</p></div>')
 section("approach", title("Two linked models turn public data into a regional plan", "Method") + f'''
 <div style="display:flex;flex-direction:row;gap:24px">
-{step("1 · Data", "Official sources", "CEA, MoP, UN WPP 2024, MoSPI, MoHFW, NISE, NIWE, DAE; 16 automated checks")}
-{step("2 · Demand", "State panel model", "36 states: income, population, urbanisation; plus EVs, data centres, green H₂")}
+{step("1 · Data", "Official sources", "Official INNOTHON dataset, NPP/CEA generation reports, Grid-India flows, MoP, UN WPP 2024, MoSPI, MoHFW, NISE, NIWE")}
+{step("2 · Demand", "Generation model", "Fitted on energy generated only: national and 5 regions; income, population; plus EVs, data centres, green H₂")}
 {step("3 · Uncertainty", "2,000 Monte Carlo runs", "Every driver varied at once; tornado shows which matter")}
 {step("4 · Mix", "Least-cost optimiser", "5 regions × 6 sources × 12 time slices; resources, build speed, grid, CO₂")}
 {step("5 · Proof", "Backcast and benchmarks", "Reproduces FY26; checked against CEA, NEP and published 2047 studies")}
 </div>
-<p style="font-size:32px;line-height:1.4;color:{INK}">Metric throughout: <b>electricity generated</b> in FY2046-47, not capacity and not consumption. Regions follow CEA's five grids. Every number traces to a source or a reproducible run, live in our dashboard.</p>''',
-        "The method in one picture. We built two models that hand off to each other: demand by state, rolled up to regions, then a cost-minimising plan for how each region generates it. Step five is the part most teams skip: we tested the plan on today's grid before trusting 2047.")
+<p style="font-size:32px;line-height:1.4;color:{INK}">Metric throughout: <b>electricity generated</b> in FY2046-47, not capacity and not consumption. Regions follow CEA's five grids. Installed capacity and consumption are never used to forecast or compare; capacity enters only as a physical limit inside the optimiser. Every number traces to a source or a reproducible run, live in our dashboard.</p>''',
+        "The method in one picture. We built two models that hand off to each other: the generation each region needs, then a cost-minimising plan for how each region generates it. Step five is the part most teams skip: we tested the plan on today's grid before trusting 2047.")
 
 # ------------------------------------------------------------------ 4 demand model
-b = panel.iloc[0]
-section("demand-model", title(f"Electricity use per person rises {b.income_elasticity_b:.2f}% for every 1% rise in income", "Demand model") + f'''
+sh = rgh[rgh.fy_end_year == 2026].set_index("cea_region")
+section("demand-model", title(f"Electricity generated per person rises {b_g:.2f}% for every 1% rise in income", "Demand model") + f'''
 <div style="display:flex;flex-direction:row;gap:32px">
-{card("Estimated, not assumed", f"State fixed-effects regression, 32 states × 11 years (332 observations). Elasticity {b.income_elasticity_b:.3f}, standard error {b.se_b:.3f}, R² 0.986. Four other specifications: 0.663–0.689.")}
-{card("Tested against what happened", "Realised FY18→FY26 elasticity was 0.694. The model's FY27 requirement is 1,859 TWh vs CEA's forecast of 1,887 (−1.5%).")}
-{card("Urbanisation works through income", "Urban share alone predicts +2.2% use per point, but it vanishes once income is included (correlation 0.71). We keep the term and report it.")}
+{card("Fitted on generation only", f"National generation per person vs real GDP per person, FY11–FY26, growth on growth with COVID terms: elasticity {b_g:.3f} (SE {se_g:.3f}). A levels fit on the post-shortage years gives {b_l:.3f}. No consumption or capacity data.")}
+{card("Tested on what happened", f"Fitted to FY19 only, the model predicts the next years well: {bt.split('errors ')[-1]}. A naive trend misses by more ({nv}). FY26 was a cool, wet year.")}
+{card("Regions start from where power is needed", "Each region's requirement = generation inside it + net imports from other regions (NPP/CEA reports, Grid-India flows), averaged FY24–26. Then it grows with its own GSDP and population.")}
 </div>
-<p style="font-size:30px;line-height:1.4;color:{INK}">Projection: UN population (1,665 million in 2047) × state shares, GDP at 6.5% a year, elasticity easing to 75% of today's by 2047 as demand matures. We tried gradient boosting: worse out of sample (16.3% error vs 9.2%) and it cannot extrapolate.</p>''',
-        "Why a regression and not a neural network: the regression explains itself, it matched what actually happened from 2018 to 2026, and machine learning did worse out of sample because 2047 incomes are outside anything it has seen. Urbanisation matters, but through income: richer states are more urban.")
+<p style="font-size:30px;line-height:1.4;color:{INK}">Projection: UN population (1,665 million in 2047), GDP at 6.5% a year, regional GSDP and population from the official INNOTHON dataset and MoSPI, elasticity easing to 75% of today's by 2047 as demand matures. Urbanisation was tested and adds nothing beyond income, so it works through income.</p>''',
+        "Why this model: the rules say generation is the only basis, so we fitted the response of generation to income directly. It explains itself, and fitted on data only up to 2019 it predicted 2024 and 2025 within about one percent. Regions start from where electricity is actually needed: what is generated in a region plus what it imports.")
 
 # ------------------------------------------------------------------ 5 demand chart (div bars)
 yrs = [2010, 2015, 2020, 2026, 2030, 2035, 2040, 2047]
@@ -145,7 +153,7 @@ for y, v, gv in zip(yrs, vals, grid_v):
 section("demand-forecast", title(f"Generation triples to {f0(base_total)} TWh by FY2046-47", "Forecast") + f'''
 <div style="display:flex;flex-direction:row;gap:16px;align-items:end;height:680px">{bars}</div>
 <div style="display:flex;flex-direction:row;gap:32px"><div style="display:flex;flex-direction:row;gap:12px;align-items:center"><div style="width:24px;height:24px;border-radius:4px;background:#9AA3B2"></div><p style="font-size:24px;color:{MUTED}">Actual (CEA)</p></div><div style="display:flex;flex-direction:row;gap:12px;align-items:center"><div style="width:24px;height:24px;border-radius:4px;background:{DARK}"></div><p style="font-size:24px;color:{MUTED}">Forecast, grid demand</p></div><div style="display:flex;flex-direction:row;gap:12px;align-items:center"><div style="width:24px;height:24px;border-radius:4px;background:{COL["wind"]}"></div><p style="font-size:24px;color:{MUTED}">Green hydrogen</p></div></div>''',
-        f"Growth from {f0(fy26)} to {f0(base_total)} terawatt-hours is about {cagr:.1f} percent a year, slightly faster than the 2014 to 2025 trend because of new loads. Hydrogen is shown separately so the grid number can be read on its own.")
+        f"Growth from {f0(fy26)} to {f0(base_total)} terawatt-hours is about {cagr:.1f} percent a year: the historical response to income plus new loads that history does not contain. Hydrogen is shown separately so the grid number can be read on its own.")
 
 # ------------------------------------------------------------------ 6 new loads
 section("new-loads", title(f"New loads add about {round((nb.loc[2047,'gen_ev_dc'] + base_h2) / 50) * 50:,.0f} TWh that history cannot show", "Demand model") + f'''
@@ -169,23 +177,23 @@ for _, r in tor.iterrows():
                f'<div style="width:{W}px;display:flex;flex-direction:row;align-items:center;gap:8px"><div style="width:{hw:.0f}px;height:36px;background:{ACC2};border-radius:4px"></div><p style="font-size:24px;color:{MUTED}">+{f0(r.high)}</p></div></div>')
 section("uncertainty", title("Hydrogen, income response and GDP drive the uncertainty", "Uncertainty") + f'''
 <div style="display:flex;flex-direction:column;gap:8px">{rows_t}</div>
-<p style="font-size:28px;line-height:1.4;color:{INK}">Change in 2047 total vs base {f0(base_total)} TWh, one driver at a time (grey low, teal high). All at once, the Monte Carlo P10–P90 is <b>{f0(p10)}–{f0(p90)} TWh</b>; published 2047 scenarios (5,254–6,033) sit inside it.</p>''',
-        "Read this as where to spend effort. Population and conversion losses barely matter. Hydrogen policy, how strongly use responds to income, and GDP each move the answer by about a thousand terawatt-hours. The Monte Carlo median is above base because hydrogen and elasticity ranges skew upward.")
+<p style="font-size:28px;line-height:1.4;color:{INK}">Change in 2047 total vs base {f0(base_total)} TWh, one driver at a time (grey low, teal high). All at once, the Monte Carlo P10–P90 is <b>{f0(p10)}–{f0(p90)} TWh</b>; it overlaps the published 2047 range (5,254–6,033) and sits at its upper end.</p>''',
+        "Read this as where to spend effort. Population and delivery losses barely matter. GDP, hydrogen policy and how strongly generation responds to income each move the answer by about a thousand terawatt-hours. The Monte Carlo median is above base because the hydrogen and EV ranges skew upward.")
 
 # ------------------------------------------------------------------ 8 regional demand
 rd = reg_d.drop(index="India").reindex(["Western", "Southern", "Northern", "Eastern", "North-Eastern"])
-rows = [[r, f0(v.req_fy26_twh), f0(v.gen_grid_2047_twh), f0(v.gen_h2_2047_twh), f0(v.gen_total_2047_twh), f"{v.growth_x:.1f}×"] for r, v in rd.iterrows()]
-rows.append(["India", f0(reg_d.loc["India", "req_fy26_twh"]), f0(reg_d.loc["India", "gen_grid_2047_twh"]), f0(reg_d.loc["India", "gen_h2_2047_twh"]), f0(reg_d.loc["India", "gen_total_2047_twh"]), f"{reg_d.loc['India','growth_x']:.1f}×"])
+rows = [[r, f0(v.gen_fy26_twh), f0(v.gen_grid_2047_twh), f0(v.gen_h2_2047_twh), f0(v.gen_total_2047_twh), f"{v.growth_x:.1f}×"] for r, v in rd.iterrows()]
+rows.append(["India", f0(reg_d.loc["India", "gen_fy26_twh"]), f0(reg_d.loc["India", "gen_grid_2047_twh"]), f0(reg_d.loc["India", "gen_h2_2047_twh"]), f0(reg_d.loc["India", "gen_total_2047_twh"]), f"{reg_d.loc['India','growth_x']:.1f}×"])
 section("regional-demand", title("The South grows fastest; the West stays the largest", "Regional demand") +
         table(["Region", "FY26 requirement TWh", "2047 grid TWh", "2047 green H₂ TWh", "2047 total TWh", "Growth"], rows, [24, 16, 15, 16, 15, 14], size=30, hl=[5]) +
-        f'<p style="font-size:28px;line-height:1.4;color:{INK}">Built up from 36 states and union territories, so regions always add to the national total. Data centres and hydrogen clusters pull growth south and west; Northern states grow from a larger base.</p>',
-        "Regions are sums of states, not shares of a national number, so the regional story comes from each state's own income, population and urbanisation. The South is 3.2 times today because of data centres in Tamil Nadu and Telangana and hydrogen in Andhra Pradesh and Tamil Nadu.")
+        f'<p style="font-size:28px;line-height:1.4;color:{INK}">FY26 requirement = generation in the region + net imports (weather-smoothed). Regions add to the national total by construction. Data centres and hydrogen clusters pull growth south and west.</p>',
+        f"Each region grows from its own income and population, starting from the generation it actually needs today. The South is {rd.loc['Southern','growth_x']:.1f} times today because of data centres in Tamil Nadu and Telangana and hydrogen in Andhra Pradesh and Tamil Nadu.")
 
 # ------------------------------------------------------------------ 9 mix model
 section("mix-model", title("A least-cost optimiser decides who generates what, hour by season", "Mix model") + f'''
 <div style="display:flex;flex-direction:row;gap:32px">
 {card("Sees night and monsoon", "12 time slices: 4 seasons × day, evening, night. Solar is absent at night and dims in the monsoon; wind peaks June–September. An annual-only version gave 0% coal, so we rejected it.")}
-{card("Respects real limits", "NISE solar, NIWE wind and CEA hydro potential; build speed (solar 1,279 GW, wind 375 GW by 2047); 229 GW of committed coal; nuclear ≤ 100 GW; corridors 3× today.")}
+{card("Respects real limits", f"NISE solar, NIWE wind and CEA hydro potential; build speed (solar {f0(SOLCAP)} GW, wind {f0(WINDCAP)} GW by 2047); 229 GW of committed coal; nuclear ≤ 100 GW; corridors 3× today.")}
 {card("Keeps the lights on", "15% reserve over peak; coal never below 40% of its evening output; 4-hour batteries and 8-hour pumped storage cycle daily with losses; CO₂ ≤ 1.2 Gt.")}
 </div>
 <p style="font-size:30px;line-height:1.4;color:{INK}">Linear programme solved with HiGHS in under a second per scenario, so we ran 135 policy combinations for the dashboard. Costs are 2026 tariffs: solar ₹2.5–3.0, wind ₹3–4, coal ₹5–6.3, nuclear ₹6–7 per kWh.</p>''',
@@ -197,7 +205,7 @@ lab = "".join(f'<div style="flex:1;display:flex;flex-direction:column;gap:4px;bo
 section("national-mix", title(f"In 2047, solar and wind make {natpct.solar + natpct.wind:.0f}% of India's electricity; coal falls to {natpct.coal:.0f}%", "2047 mix") + f'''
 <div style="display:flex;flex-direction:row;border-radius:12px;overflow:hidden">{bar}</div>
 <div style="display:flex;flex-direction:row;gap:24px">{lab}</div>
-<p style="font-size:30px;line-height:1.4;color:{INK}">Storage: {f0(cap.bess.sum())} GW of batteries and {f0(cap.psp.sum())} GW of pumped hydro move midday sun into the evening, against CEA's own estimate of 476 GW of storage needed in 2046-47. No new coal is built beyond what is committed; the 229 GW fleet runs at 62% load factor, mostly evenings and nights.</p>''',
+<p style="font-size:30px;line-height:1.4;color:{INK}">Storage: {f0(cap.bess.sum())} GW of batteries and {f0(cap.psp.sum())} GW of pumped hydro move midday sun into the evening. No new coal is built beyond what is committed; the {f0(cap.coal.sum())} GW fleet runs at {nat.coal / (cap.coal.sum() * 8.76) * 100:.0f}% load factor, mostly evenings and nights.</p>''',
         "Solar is the cheapest energy, so it is built as fast as India can build it. Coal does not disappear: the committed fleet is paid for and covers nights and the low-wind winter. Gas is backup capacity only, because imported LNG is the most expensive energy on the system.")
 
 # ------------------------------------------------------------------ 11 regional mix
@@ -230,7 +238,7 @@ for y, r in path.iterrows():
 section("pathway", title("Clean power carries all the growth; coal output stays near today's level", "Pathway") + f'''
 <div style="display:flex;flex-direction:row;gap:24px;align-items:end;height:660px">{cols}</div>
 {legend()}''',
-        "The same model solved at each milestone with that year's demand, committed fleet and build limits. FY30 lands next to CEA's National Electricity Plan: about half coal and 1.17 gigatonnes, versus NEP's 50 percent and 1.18 gigatonnes for FY32. Emissions peak in the mid-2030s, then fall.")
+        f"The same model solved at each milestone with that year's demand, committed fleet and build limits. FY30 lands next to CEA's National Electricity Plan: {path.loc[2030,'coal_pct']:.0f} percent coal and {path.loc[2030,'co2_mt']/1000:.2f} gigatonnes, versus NEP's 50 percent and 1.18 gigatonnes for FY32. Emissions peak in the mid-2030s, then fall.")
 
 # ------------------------------------------------------------------ 13 trade-offs
 keys = [("Base", "Base: 1.2 Gt cap"), ("Relaxed CO2 (1.7 Gt)", "CO₂ cap 1.7 Gt (NEP-like)"), ("Strict CO2 (0.8 Gt)", "CO₂ cap 0.8 Gt"),
@@ -243,34 +251,35 @@ for k, l in keys:
     rows_s.append([l, f1(r["coal_%"]), f1(r["nuclear_%"]), f1(r["solar_%"] + r["wind_%"]), f1(r["non_fossil_%"]), f0(r.co2_mt) + over, f"{r.cost_rs_per_kwh:.2f}"])
 section("tradeoffs", title("How fast India builds matters more than what solar costs", "Trade-offs") +
         table(["2047 scenario", "Coal %", "Nuclear %", "Solar + wind %", "Non-fossil %", "CO₂ Mt (over cap)", "₹/kWh"], rows_s, [28, 10, 11, 13, 12, 15, 11], size=28, hl=[0]) +
-        f'<p style="font-size:28px;line-height:1.4;color:{INK}">Solar 30% dearer changes nothing (it is already build-limited). Building 25% slower overshoots the cap by {f0(sc.loc["Slower RE build (-25%)","co2_over_cap_mt"])} Mt. Delaying nuclear triples the carbon price and brings back imported gas. Transmission at 2× instead of 3× barely matters.</p>',
+        f'<p style="font-size:28px;line-height:1.4;color:{INK}">Solar 30% dearer changes nothing (it is already build-limited). Building 25% slower overshoots the cap by {f0(sc.loc["Slower RE build (-25%)","co2_over_cap_mt"])} Mt. Delaying nuclear overshoots it by {f0(sc.loc["Nuclear delay (<=50 GW)","co2_over_cap_mt"])} Mt and brings back imported gas. Building 25% faster cuts cost to ₹{sc.loc["Faster RE build (+25%)","cost_rs_per_kwh"]:.2f}. Transmission at 2× instead of 3× barely matters.</p>',
         "The policy message: permitting, land, transmission and manufacturing speed decide the outcome more than technology cost. Nuclear is the flexible lever. A slower build or a delayed nuclear programme pushes India back to coal and imported gas.")
 
 # ------------------------------------------------------------------ 14 validation
 nb_ = bk[bk.region == "India"].set_index("source")
 ta = nb_.actual_twh.sum(); tm = nb_.model_twh.sum()
 rows_v = [[LAB[s], f1(nb_.loc[s, "actual_twh"] / ta * 100), f1(nb_.loc[s, "model_twh"] / tm * 100)] for s in SRC]
-bench = [["Requirement FY27", "1,859 TWh", "1,887 TWh (CEA forecast)"], ["Coal share FY30 vs FY32", f"{path.loc[2030,'coal_pct']:.0f}% (FY30)", "~50% (NEP, FY32)"],
+bench = [["Back-test FY24 / FY25 (fit to FY19)", " / ".join(x.split(": ")[1] for x in bt.split("errors ")[-1].split(", ")[:2]), "naive trend: " + " / ".join(x.split(": ")[1] for x in nv.split(", ")[:2])],
+         ["Coal share of generation FY30 vs FY32", f"{path.loc[2030,'coal_pct']:.0f}% (FY30)", "~50% (NEP, FY32)"],
          ["Power CO₂ FY30 vs FY32", f"{f0(path.loc[2030,'co2_mt'])} Mt", "1,180 Mt (draft NEP)"], ["Total generation 2047", f"{f0(base_total)} TWh", "5,254–6,033 (published)"],
-         ["Storage 2047", f"{f0(cap.bess.sum() + cap.psp.sum())} GW", "476 GW (CEA need)"], ["Solar / wind 2047", "1,279 / 375 GW", "~1,200 / 400–450 GW (CEA)"]]
+         ["Regions + Bhutan vs national generation", "0.0% gap, FY19–26", "NPP/CEA vs MoP"]]
 section("validation", title("Tested on today's grid before trusting 2047", "Validation") + f'''
 <div style="display:flex;flex-direction:row;gap:48px">
 <div style="flex:1;display:flex;flex-direction:column;gap:16px"><h3 style="font-size:32px;font-weight:600;color:{DARK}">FY26 backcast, share of generation</h3>{table(["Source", "Actual %", "Model %"], rows_v, [40, 30, 30], size=26)}<p style="font-size:24px;line-height:1.4;color:{MUTED}">Regional coal placed within 6%; inter-regional flows in the right direction. Gas runs on contracts the model does not see.</p></div>
-<div style="flex:1.4;display:flex;flex-direction:column;gap:16px"><h3 style="font-size:32px;font-weight:600;color:{DARK}">Against official numbers</h3>{table(["Measure", "Ours", "Benchmark"], bench, [36, 26, 38], size=26)}<p style="font-size:24px;line-height:1.4;color:{MUTED}">Plus 13 checks recomputed on every solution: energy balance in all 60 region-slices, caps, reserve, CO₂, corridors.</p></div>
+<div style="flex:1.4;display:flex;flex-direction:column;gap:16px"><h3 style="font-size:32px;font-weight:600;color:{DARK}">Generation-only checks and benchmarks</h3>{table(["Measure", "Ours", "Benchmark"], bench, [36, 26, 38], size=26)}<p style="font-size:24px;line-height:1.4;color:{MUTED}">Plus 13 checks recomputed on every solution: energy balance in all 60 region-slices, caps, reserve, CO₂, corridors.</p></div>
 </div>''',
-        "Most forecasts are judged only on plausibility. We gave the mix model today's fleet and today's demand and it reproduced the actual FY26 mix within about one point. Our FY30 and 2047 figures sit next to CEA's own plan, and the storage the optimiser chooses matches CEA's independent estimate within six percent.")
+        "Most forecasts are judged only on plausibility. Fitted only to 2019, our demand model predicted 2024 and 2025 generation within about one percent. We gave the mix model today's fleet and requirement and it reproduced the actual FY26 generation mix within about one point. Every comparison here is on energy generated, as the rules require.")
 
 # ------------------------------------------------------------------ 15 screening reconciliation
-rows_q = [["2047 demand", "5,400 TWh", f"{f0(base_total)} TWh"], ["Coal", "28%", f"{natpct.coal:.1f}%"], ["Gas", "6%", f"{natpct.gas:.1f}%"], ["Solar", "30%", f"{natpct.solar:.1f}%"],
-          ["Wind", "17%", f"{natpct.wind:.1f}%"], ["Hydro", "9%", f"{natpct.hydro:.1f}%"], ["Nuclear", "10%", f"{natpct.nuclear:.1f}%"], ["Non-fossil", "66%", f"{nonfossil:.1f}%"]]
-section("screening", title("The model confirmed our screening size and moved the mix off coal", "What changed") + f'''
+rows_q = [["2047 generation", "5,553 TWh", f"{f0(base_total)} TWh"], ["Coal", "22%", f"{natpct.coal:.1f}%"], ["Gas", "1%", f"{natpct.gas:.1f}%"], ["Solar", "42%", f"{natpct.solar:.1f}%"],
+          ["Wind", "19%", f"{natpct.wind:.1f}%"], ["Hydro", "6%", f"{natpct.hydro:.1f}%"], ["Nuclear", "10%", f"{natpct.nuclear:.1f}%"], ["Non-fossil", "77%", f"{nonfossil:.1f}%"]]
+section("screening", title("Re-fitting on generation only raised the forecast; the mix held", "What changed since registration") + f'''
 <div style="display:flex;flex-direction:row;gap:48px">
-<div style="flex:1">{table(["", "Screening answer", "Full model"], rows_q, [34, 33, 33], size=28)}</div>
+<div style="flex:1">{table(["", "Registration (7 Nov)", "Final model"], rows_q, [34, 33, 33], size=28)}</div>
 <div style="flex:1;display:flex;flex-direction:column;gap:24px">
-{card("Size held", "Demand is within 3% of our screening figure; the bottom-up new loads explain the difference.", "")}
-{card("Mix moved", "Least cost under a flat CO₂ cap builds no new coal and little gas. The draft-NEP-like cap (1.7 Gt) gives 68% non-fossil, close to our screening 66%.", "")}
+{card("Why the size rose", f"The registration figure came from a consumption-based state model. The rules require generation only, so we re-fitted on generation: elasticity {b_g:.2f} instead of 0.69, and new loads converted with full delivery losses. Result: +{(base_total/5553-1)*100:.0f}%.", "")}
+{card("Why the mix held", f"Higher demand made build speed bind, so the plan builds solar and wind about 10% faster than before ({f0(SOLCAP)} / {f0(WINDCAP)} GW by 2047). That holds CO₂ at 1.2 Gt and keeps the mix within a point or two of our registration answer.", "")}
 </div></div>''',
-        "Judges will compare our final answer with what we submitted at registration. The total held. The mix moved because the optimiser found that, once the committed coal fleet is used fully, new solar plus batteries beats new coal and imported gas on cost.")
+        f"Judges will compare our final answer with what we submitted at registration. The total rose about {(base_total/5553-1)*100:.0f} percent because we rebuilt the forecast on energy generated only, as the problem statement requires. The mix barely moved: faster solar and wind keep emissions at 1.2 gigatonnes.")
 
 # ------------------------------------------------------------------ 16 policy statement (accent slide)
 pt = lambda h, b: f'<div style="flex:1;display:flex;flex-direction:column;gap:16px;border-top:4px solid {ACC};padding:24px 0px 0px"><h3 style="font-size:36px;font-weight:600;color:{LIGHT}">{h}</h3><p style="font-size:28px;line-height:1.4;color:#C9D3E3">{b}</p></div>'
@@ -279,33 +288,33 @@ section("implications", f'''
 <h2 style="font-family:{SERIF};font-size:72px;font-weight:600;line-height:1.12;color:{LIGHT}">Build speed, not technology cost, decides whether 2047 is clean</h2>
 <div style="flex:1"></div>
 <div style="display:flex;flex-direction:row;gap:48px">
-{pt("Build 70 GW of solar a year", "And 20 GW of wind: 1.6× and 3× today's records. Land, permitting and domestic manufacturing are the bottleneck.")}
+{pt("Build ~82 GW of solar a year", "And ~23 GW of wind from the mid-2030s: about 1.8× and 3.8× today's records. Land, permitting and domestic manufacturing are the bottleneck.")}
 {pt("Wire the East", "Triple inter-regional transfer capacity so the North, West and North-East can supply the East.")}
 {pt("Keep nuclear on schedule", "80–100 GW is the clean firm power that lets coal plateau; delay brings back imported gas.")}
-{pt("Store the sun", "About 500 GW of storage by 2047, mostly 4-hour batteries next to solar.")}
+{pt("Store the sun", f"About {round(cap.bess.sum() + cap.psp.sum(), -1):,.0f} GW of storage by 2047, mostly 4-hour batteries next to solar.")}
 </div>''',
         "The decision-relevant finding: the cheapest clean system is available, and the constraint is delivery. Four actions follow directly from the model's binding constraints.",
         bg=DARK, color=LIGHT, pad="128px 128px 160px")
 
 # ------------------------------------------------------------------ 17 limitations
-section("limitations", title("What the model simplifies, and what changes on 13 November", "Limitations") + f'''
+section("limitations", title("What the model simplifies", "Limitations") + f'''
 <div style="display:flex;flex-direction:row;gap:32px">
 {card("12 slices, not 8,760 hours", "Multi-day wind or sun lulls are covered only by the reserve margin. Our storage need is close to CEA's, so the effect looks small.")}
-{card("Stylised daily shapes", "Demand, solar, wind and hydro profiles are documented assumptions. Hourly data in the official release will replace them.")}
+{card("Short regional history", "Region-wise generation is available for FY19–26 and inter-regional flows for FY24–26, so the elasticity is estimated nationally and applied to each region's own income growth.")}
 {card("New loads are outlooks", "Hydrogen, EVs and data centres have no history, so they carry wide ranges and dominate the uncertainty.")}
 </div>
-<p style="font-size:30px;line-height:1.4;color:{INK}">One script reloads the official datasets, compares them with our public data, and reruns the demand model, Monte Carlo, mix, pathway and dashboard; every change is logged with its cause. Costs are held at 2026 levels, which is conservative for solar and batteries.</p>''',
+<p style="font-size:30px;line-height:1.4;color:{INK}">The official INNOTHON dataset supplies state population and GSDP (GSDP after FY2019-20 is imputed, so MoSPI extends it); its installed-capacity columns are not used, because the rules forbid capacity as a basis. Demand, solar, wind and hydro daily shapes are documented assumptions. Costs are held at 2026 levels, which is conservative for solar and batteries.</p>''',
         "Being explicit about limits is part of defensibility. None of these is hidden in the dashboard, and the official data release plugs straight into the pipeline.")
 
 # ------------------------------------------------------------------ 18 dashboard + close
 section("dashboard", title("Explore every assumption live: the models re-run as you move a slider", "Interactive dashboard") + f'''
 <div style="display:flex;flex-direction:row;gap:32px">
-{card("Trace the forecast", "Move GDP, income response, population, EVs, data centres or hydrogen and the state model re-runs. Pick any state to see population, urbanisation, use per person and demand, year by year.")}
+{card("Trace the forecast", "Move GDP, income response, population, EVs, data centres or hydrogen and the generation model re-runs. Pick any region to see population, GSDP, generation per person and requirement, year by year.")}
 {card("Inspect regional trade-offs", "Change the CO₂ cap, nuclear policy, build speed, transmission or storage cost and the optimiser re-solves all five regions in about two seconds, with 13 checks on every solution.")}
 {card("Explore scenarios", "Save settings and compare them with the 1.2 Gt and draft-NEP-like 1.7 Gt cases; see the pathway re-solve to 2047 and the FY26 backcast.")}
 </div>
 <p style="font-size:30px;line-height:1.4;color:{INK}"><a href="https://innothon-2047-lht5kj3587q6dwmteapysu.streamlit.app/">innothon-2047-lht5kj3587q6dwmteapysu.streamlit.app</a> · built in Streamlit on our own Python models; a pre-computed backup runs on claude.ai. AI tools: built with help from Claude (Anthropic) for data gathering, coding and drafting, as the competition terms require us to disclose.</p>''',
-        "Switch to the live app now and follow the demo script: Overview, then the Karnataka trace, then hydrogen at 25 Mt, then build speed at 0.75 and nuclear delayed on the Generation mix tab, then the checks, the backcast and the scenario comparison. If the app is slow, use the backup tab with the same story.")
+        "Switch to the live app now and follow the demo script: Overview, then the Southern region trace, then hydrogen at 25 Mt, then build speed at 0.75 and nuclear delayed on the Generation mix tab, then the checks, the backcast and the scenario comparison. If the app is slow, use the backup tab with the same story.")
 
 # ------------------------------------------------------------------ write
 for sid, s in slides.items():
@@ -341,21 +350,21 @@ for sid in ["answer", "regional-mix", "uncertainty", "tradeoffs", "validation"]:
 qs = lambda h, b: f'<div style="display:flex;flex-direction:column;gap:8px;border-left:6px solid {ACC};padding:8px 0px 8px 32px"><h3 style="font-size:34px;font-weight:600;color:{DARK}">{h}</h3><p style="font-size:26px;line-height:1.4;color:{MUTED}">{b}</p></div>'
 mid("mentor-questions", f'''<section id="mentor-questions" data-transition="fade" style="background:{LIGHT};color:{INK};font-family:{SANS};padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
 {title("Five questions we would like the mentors' view on", "For discussion")}
-{qs("1. Headline CO₂ path: 1.2 Gt or 1.7 Gt in 2047?", "1.2 Gt (today's level) gives 78% non-fossil; the draft-NEP-like 1.7 Gt gives 68%. Which is the more defensible base for this jury?")}
+{qs("1. Headline CO₂ path: 1.2 Gt or 1.7 Gt in 2047?", f"1.2 Gt (today's level) gives {nonfossil:.0f}% non-fossil; the draft-NEP-like 1.7 Gt gives {sc.loc['Relaxed CO2 (1.7 Gt)','non_fossil_%']:.0f}%. Which is the more defensible base for this jury?")}
 {qs("2. Is 12 Mt of green hydrogen the right base?", "It is the largest single uncertainty (±~1,000 TWh). Should hydrogen electricity sit inside the 2047 requirement or beside it?")}
-{qs("3. Batteries vs pumped storage", "At 2026 costs the optimiser picks 480 GW of 4-hour batteries and no new pumped storage; CEA plans 100 GW of pumped storage by 2036. What are we not pricing?")}
-{qs("4. Build-speed caps", "We cap 2047 at 1,279 GW solar and 375 GW wind (1.6× and 3× today's records). Too tight, or too loose?")}
-{qs("5. The Eastern region", "The East imports 225 TWh and adds 23 GW of nuclear because its sun is weakest and it has no 150 m wind. Realistic?")}
+{qs("3. Batteries vs pumped storage", f"At 2026 costs the optimiser picks {f0(cap.bess.sum())} GW of 4-hour batteries and no new pumped storage; CEA plans 100 GW of pumped storage by 2036. What are we not pricing?")}
+{qs("4. Build-speed caps", f"We cap 2047 at {f0(SOLCAP)} GW solar and {f0(WINDCAP)} GW wind (about 82 and 23 GW a year after 2036). Too tight, or too loose?")}
+{qs("5. The Eastern region", f"The East imports {f0(-bal.loc['Eastern','net_export_twh'])} TWh and adds {f0(cap.loc['Eastern','nuclear'])} GW of nuclear because its sun is weakest and it has no 150 m wind. Realistic?")}
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:{MUTED}">India 2047 electricity forecast · Midpoint review</p>
 <aside>Ask these in order and note each answer; each maps to a switch in the live dashboard, so we can show the effect on the spot.</aside>
 </section>
 ''')
 step2 = lambda h, b: f'<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border:1px solid {RULE};border-top:8px solid {ACC2};border-radius:16px;padding:32px"><h3 style="font-size:30px;font-weight:600;color:{DARK}">{h}</h3><p style="font-size:24px;line-height:1.4;color:{MUTED}">{b}</p></div>'
 mid("next-steps", f'''<section id="next-steps" data-transition="fade" style="background:{LIGHT2};color:{INK};font-family:{SANS};padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
-{title("From now to the final: plug in the official data, then tighten", "Plan")}
+{title("From now to the final: official data in, now tighten", "Plan")}
 <div style="display:flex;flex-direction:row;gap:24px">
-{step2("13 Nov · Compare", "One script lists the official files and flags every value that differs from our public data by more than 2%.")}
-{step2("14–16 Nov · Swap and rerun", "Swap the agreed tables, rerun data, demand, Monte Carlo, mix and pathway in one command; 16 + 19 + 13 checks must pass.")}
+{step2("13 Nov · Done", "Official dataset checked; forecast rebuilt on energy generated only (NPP/CEA region-wise generation, Grid-India flows).")}
+{step2("14–17 Nov · Tighten", "Fill the FY21 regional RE gap from source, refresh FY26 flows for the East and North-East, rehearse.")}
 {step2("19–20 Nov · Act on mentor input", "Adjust the CO₂ base, hydrogen, storage or build caps as agreed; the dashboard and deck regenerate from the models.")}
 {step2("21–22 Nov · Final", "Defensibility deck plus live demo on the public dashboard; backup dashboard ready.")}
 </div>

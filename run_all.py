@@ -3,7 +3,7 @@
     python run_all.py                 # rebuild from current data/
     python run_all.py --compare official/   # first diff the official release against our tables (see ingest_official.py)
 
-Order: data tables + 16 checks -> panel -> demand v1 -> Monte Carlo/tornado -> demand tests -> mix scenarios
+Order: data tables + checks -> regional generation history -> generation-only demand model -> Monte Carlo/tornado -> demand tests -> mix scenarios
 (13 checks) -> FY26 backcast -> pathway -> dashboard exports -> deck slide files.
 """
 import subprocess, sys, time
@@ -12,10 +12,10 @@ from pathlib import Path
 ROOT = Path(__file__).parent
 STEPS = [
     ("Data tables + validation", ["data/validate_all.py"]),
-    ("Panel regression", ["model/panel.py"]),
-    ("Demand model v1", ["model/demand_v1.py"]),
-    ("Monte Carlo + tornado + regional", ["model/simulate_v1.py", "2000"]),
-    ("Demand model tests", ["model/test_demand_v1.py"]),
+    ("Official dataset cross-check", ["data/check_official_dataset.py"]),
+    ("Demand model (generation basis)", ["model/demand_gen.py"]),
+    ("Monte Carlo + tornado + regional", ["model/simulate.py", "2000"]),
+    ("Demand model tests", ["model/test_demand.py"]),
     ("Mix scenarios + verification", ["model/run_mix.py"]),
     ("FY26 backcast", ["model/backcast_fy26.py"]),
     ("Pathway FY30-FY47", ["model/pathway.py"]),

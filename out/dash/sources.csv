@@ -1,5 +1,9 @@
 source,used_for,link
-CEA,"Generation by source & region, installed capacity, energy requirement (states), transfer capacity",https://cea.nic.in
+INNOTHON official dataset (renewable-india-dataset),State population and GSDP 2006-2024 (cross-checked against MoSPI; post-2019 GSDP imputed),https://github.com/chrisjaimyantony/renewable-india-dataset
+National Power Portal / CEA 18-column generation reports,Region-wise conventional generation FY19-FY26,https://npp.gov.in
+CEA Monthly RE Generation Reports,Region-wise RE generation FY19-FY26,https://cea.nic.in
+Grid-India (via T&D India),Net inter-regional energy exchange FY24-FY26,https://grid-india.in
+CEA,Fleet and transfer capacity as optimiser inputs (not used for forecasting or comparison),https://cea.nic.in
 Ministry of Power / PIB,"National generation history, FY26 totals, coal pipeline",https://pib.gov.in
 UN World Population Prospects 2024,Population 2010-2050,https://population.un.org/wpp/
 MoHFW Technical Group on Population Projections,State population shares 2011-2036,https://mohfw.gov.in

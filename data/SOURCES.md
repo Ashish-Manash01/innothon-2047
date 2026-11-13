@@ -40,3 +40,9 @@ Built 6 Nov 2026. Rebuild everything and re-run all checks with: `python data/va
 
 ## EV cross-check (2047 consumption)
 - Model: 459 TWh base (186–977). The Hindu (May 2026): ~500 TWh at 50% road-vehicle electrification by 2047; 900–1,100 TWh at full electrification. Sobha et al. (2023): 295 TWh by 2050 at 45% 2W/4W electric. Base sits inside the published range.
+
+## Generation-only re-base (13 Nov 2026)
+- **Official INNOTHON dataset**: github.com/chrisjaimyantony/renewable-india-dataset (`data/official/renewable_energy_dataset.csv`). State population and GSDP 2006-2024 (Year = FY start). GSDP matches MoSPI to FY2019-20, then is imputed and runs 5-15% low; MoSPI extends it. Installed-capacity columns not used.
+- **Region-wise conventional generation FY19-FY26**: CEA 18-column monthly generation report, sub-report 2, March issues, via National Power Portal, e.g. https://npp.gov.in/public-reports/cea/monthly/generation/18_col_act/2026/MAR/18_col_act-2_2026-MAR.pdf
+- **Region-wise RE generation FY19-FY26**: CEA Monthly RE Generation Reports (March issues), e.g. https://cea.nic.in/wp-content/uploads/resd/2025/03/Monthly_RE_Generation_Report_March_2025.docx.pdf ; https://cea.nic.in/old/reports/monthly/renewable/2020/renewable-03.pdf ; Broad Overview of RE Generation March 2026. FY21 interpolated (report offline) and scaled to the MoP national total.
+- **Net inter-regional exchange FY24-FY26**: Grid-India statistics as reported by T&D India (26 Apr 2024, 7 May 2025, 28 Apr 2026). Unpublished NER values set to 0; Western FY24 and Eastern FY26 as residuals.

@@ -8,21 +8,23 @@ from pathlib import Path
 import pandas as pd
 
 D = Path(__file__).parent
-BUILDERS = ["build_national_history.py", "build_state_master.py", "build_state_energy.py",
+BUILDERS = ["build_national_history.py", "build_state_master.py", "build_region_generation_history.py",
             "build_state_gsdp.py", "build_resources.py", "build_techno_economics.py"]
 for b in BUILDERS:
     subprocess.run([sys.executable, str(D / b)], check=True, capture_output=True)
 
 r = lambda f: pd.read_csv(D / f)
-nat, sm, se, gs = r("national_history.csv"), r("state_master.csv"), r("state_energy_requirement.csv"), r("state_gsdp.csv")
+nat, sm, gs = r("national_history.csv"), r("state_master.csv"), r("state_gsdp.csv")
+rgh = r("region_generation_history.csv")
 res, reg, reg_g = r("state_resources.csv"), r("state_re_generation_fy26.csv"), r("region_generation_fy26.csv")
 
 checks = []  # (name, ours, published, tolerance_pct)
 checks.append(("Population 2026, sum of states (TG, thousand)", sm.pop_2026_k.sum(), 1429404, 0.1))
 checks.append(("Population 2036, sum of states (TG, thousand)", sm.pop_2036_k.sum(), 1522300, 0.2))
-for y, pub in {2015: 1068923, 2018: 1213325, 2022: 1379812, 2024: 1626132, 2026: 1707493}.items():
-    s = se[se.fy_end_year == y].requirement_mu.sum()
-    checks.append((f"Energy requirement FY{y}, states vs All-India (MU)", s, pub, 0.05))
+bh = r("bhutan_import_history.csv").set_index("fy_end_year").bhutan_mu
+for y in (2019, 2022, 2024, 2026):
+    s = (rgh[rgh.fy_end_year == y].generation_mu.sum() + bh[y]) / 1e3
+    checks.append((f"Regional generation FY{y} + Bhutan vs national (BU)", s, nat.set_index("fy_end_year").generation_bu[y], 0.1))
 g25 = gs[gs.fy_end_year == 2025].gsdp_cr_2011_12.sum()
 checks.append(("GSDP 2024-25 sum vs GDP (states normally exceed by 0-3%)", g25, 18796955, 3.0))
 checks.append(("Solar potential (GWp)", res.solar_potential_gwp.sum(), 3343.37, 0.01))

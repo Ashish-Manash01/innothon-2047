@@ -1,11 +1,11 @@
 """2026 -> 2047 pathway: solve the regional mix LP at milestone years (FY ending 2030, 2035, 2040, 2047) with
-year-specific demand (demand model v1, regionalised), committed fleet, build caps, transmission and CO2 caps.
+year-specific demand (generation-only demand model, regionalised), committed fleet, build caps, transmission and CO2 caps.
 
 Anchors (all documented in data/mix_assumptions.csv or below)
   - FY26 actual fleet (CEA 31-03-2026): coal 221.9 + lignite 6.6, gas 20.1, nuclear 8.78, large hydro 51.4,
     solar 150.3, wind 56.1, PSP 7.43 GW.
   - CEA projection for 2035-36: coal+lignite 315, gas 20, nuclear 22, hydro 78, solar 509, wind 155 GW.
-  - 2047 caps: solar 1,279, wind 375, hydro 111, nuclear 100 (Nuclear Energy Mission), coal 280 GW.
+  - 2047 caps: solar 1,407, wind 412 (raised 10% on 13 Nov), hydro 111, nuclear 100 (Nuclear Energy Mission), coal 280 GW.
   - Build caps for 2030/2035/2040 = straight-line between those anchors (FY26 -> FY36 -> FY47).
   - Committed coal: today's fleet + 39.5 GW under construction (by FY30) + 22.9 GW contracted (by FY34),
     minus 60 GW of pre-2007 units retired evenly FY27-FY47 (~2.9 GW/yr).
@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 sys.path.insert(0, str(Path(__file__).parent))
-import demand_v1 as dm
+import demand_gen as dm
 import mix_lp as M
 from regional import regional
 
@@ -65,7 +65,7 @@ def run_path(p=None, label="Base", co2=None, years=YEARS):
         lf = float(np.interp(y, [2026, 2047], [0.80, 0.72]))
         cfg = dict(coal_committed=committed_coal(y), nuc_min=nuc_min(y), hydro_min=hydro_min(y),
                    psp_min=M.A.psp_existing_uc_gw if y >= 2030 else 7.43,
-                   solar_min=NOW["solar"], wind_min=NOW["wind"], load_factor=lf, bridge=float(nb.loc[y, "bridge"]))
+                   solar_min=NOW["solar"], wind_min=NOW["wind"], load_factor=lf, bridge=1.06)
         o = M.solve(co2_cap=co2[y], tx_mult=TX[y], dem=(d.gen_grid_twh, d.gen_h2_twh), cfg=cfg,
                     solar_cap=cap_path("solar", y), wind_cap=cap_path("wind", y), hydro_cap=cap_path("hydro", y),
                     nuclear_cap=cap_path("nuclear", y), coal_cap=cap_path("coal", y), label=f"{label} {y}")

@@ -1,5 +1,0 @@
-spec,income_elasticity_b,se_b,urban_semi_elast_c,se_c,n
-"1 Main (state FE, clustered SE)",0.6892,0.0747,-0.0034,0.0033,332
-"2 Drop flagged (Odisha FY22+, Karnataka FY24)",0.6729,0.0789,-0.0029,0.0033,326
-3 Huber robust,0.6628,0.0301,-0.002,0.0021,332
-"4 DVC excluded (JH, WB dropped)",0.6749,0.077,-0.0031,0.0033,311
