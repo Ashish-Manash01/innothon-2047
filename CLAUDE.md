@@ -30,6 +30,7 @@ Before pushing, ask the user to confirm the repo name and that it can be public.
   - `simulate.py`: Monte Carlo and tornado.
   - `test_demand.py`: demand model tests (back-test on generation).
   - `timeseries.py`: ARIMA, damped-trend ETS and ARIMAX cross-checks on national generation.
+  - `ml_benchmark.py`: gradient boosting, random forest and neural-network benchmark, same back-test.
   - `archive/`: superseded consumption-based models, not run.
   - `export_dashboard.py`: data for the backup dashboard.
 - `data/`: `build_*.py` builds every input table from public sources; `validate_all.py` runs 16 checks.

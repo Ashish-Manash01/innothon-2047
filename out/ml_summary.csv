@@ -1,0 +1,8 @@
+model,framing,gen_2047_twh,backtest_mae_pct_fy24_26
+"Our model (grid only, no H2)",structural,5442,2.6
+Gradient boosting,growth,8431,12.3
+Random forest,growth,5465,8.6
+Neural network (MLP),growth,1925,5.3
+Ridge (linear reference),growth,4367,2.8
+Random forest (levels),levels,2009,24.3
+Gradient boosting (levels),levels,2096,19.4

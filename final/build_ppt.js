@@ -85,7 +85,7 @@ const axis = { catAxisLabelColor: HEX.muted, valAxisLabelColor: HEX.muted, catAx
     ["Data", "Official INNOTHON dataset (state population, GSDP); NPP/CEA region-wise generation FY19–26; Grid-India inter-regional flows; MoP national generation FY10–26; UN WPP 2024"],
     ["Demand", `Generation per person grows with GDP per person: elasticity ${D.b.toFixed(2)} (SE ${D.b_se.toFixed(2)}), fitted on national generation; each region from its own GSDP and population`],
     ["New loads", `EVs, data centres and green hydrogen (${D.h2_mt} Mt) added bottom-up, because history cannot contain them`],
-    ["Cross-checks", `Back-test, ARIMA / ETS / ARIMAX time-series models, 2,000-run Monte Carlo, tornado sensitivity`],
+    ["Cross-checks", `Back-test; ARIMA, ETS, ARIMAX time series; gradient boosting, random forest, neural network; 2,000-run Monte Carlo`],
     ["Regional mix", "Least-cost optimiser: 5 regions × 6 sources × 12 time slices, with resource limits, build speed, grid corridors, storage and a CO₂ cap"],
   ];
   const w = 2.3, gap = 0.15;
@@ -107,7 +107,7 @@ const axis = { catAxisLabelColor: HEX.muted, valAxisLabelColor: HEX.muted, catAx
 // ---------------------------------------------------------------- 3 demand forecast + time series
 {
   const s = pres.addSlide({ masterName: "Content" });
-  title(s, `Generation rises ${(D.total / D.fy26).toFixed(1)}× by 2047; time-series models confirm the trend`, "TWh generated per year. History from MoP/CEA; forecast from the generation-based model.");
+  title(s, `Generation rises ${(D.total / D.fy26).toFixed(1)}×; our model out-tests time series and ML`, "TWh generated per year. History from MoP/CEA; forecast from the generation-based model.");
   const yrs = D.years, labels = yrs.map((y) => (y % 5 === 0 || y === 2047 || y === 2026 ? `FY${String(y).slice(2)}` : ""));
   s.addChart(pres.charts.LINE, [
     { name: "Actual", labels, values: yrs.map((y) => D.hist[y] ?? null) },
@@ -123,15 +123,16 @@ const axis = { catAxisLabelColor: HEX.muted, valAxisLabelColor: HEX.muted, catAx
     ["ARIMAX (GDP-driven)", { text: fmt(D.ts_sum.ARIMAX.v), options: { align: "right" } }, { text: `${D.ts_sum.ARIMAX.e.toFixed(1)}%`, options: { align: "right" } }],
     ["ARIMA trend", { text: fmt(D.ts_sum.ARIMA.v), options: { align: "right" } }, { text: `${D.ts_sum.ARIMA.e.toFixed(1)}%`, options: { align: "right" } }],
     ["ETS damped trend (floor)", { text: fmt(D.ts_sum.ETS.v), options: { align: "right" } }, { text: `${D.ts_sum.ETS.e.toFixed(1)}%`, options: { align: "right" } }],
+    ["ML: random forest", { text: fmt(D.ml["Random forest"].v), options: { align: "right" } }, { text: `${D.ml["Random forest"].e.toFixed(1)}%`, options: { align: "right" } }],
+    ["ML: neural network", { text: fmt(D.ml["Neural network (MLP)"].v), options: { align: "right" } }, { text: `${D.ml["Neural network (MLP)"].e.toFixed(1)}%`, options: { align: "right" } }],
+    ["ML: gradient boosting", { text: fmt(D.ml["Gradient boosting"].v), options: { align: "right" } }, { text: `${D.ml["Gradient boosting"].e.toFixed(1)}%`, options: { align: "right" } }],
   ];
-  s.addTable(rows, { x: 8.45, y: 1.7, w: 4.3, colW: [2.3, 0.9, 1.1], fontSize: 13, color: HEX.text, border: { type: "solid", pt: 0.5, color: HEX.line }, rowH: 0.38, margin: 0.05, objectName: "ts-table" });
+  s.addTable(rows, { x: 8.45, y: 1.7, w: 4.3, colW: [2.3, 0.9, 1.1], fontSize: 12, color: HEX.text, border: { type: "solid", pt: 0.5, color: HEX.line }, rowH: 0.31, margin: 0.04, objectName: "ts-table" });
   s.addText([
     { text: "How to read it: ", options: { bold: true, color: HEX.text } },
-    { text: `models that only extrapolate history land at ${fmt(D.ts_sum.ARIMAX.v)}–${fmt(D.ts_sum.ARIMA.v)} TWh, beside our grid-only ${fmt(D.fc_grid[2047])}. The gap to ${fmt(D.total)} is green hydrogen (${fmt(D.h2)} TWh) and faster EV and data-centre growth, which no past series contains.`, options: { color: HEX.muted, breakLine: true } },
-    { text: "Back-test: ", options: { bold: true, color: HEX.text } },
-    { text: `fitted only to FY19, our model predicts FY24–26 with ${D.bt_struct.toFixed(1)}% mean error, the best of all models tested.`, options: { color: HEX.muted } },
-  ], { x: 8.45, y: 4.2, w: 4.3, h: 2.5, fontSize: 13, margin: 0, isTextBox: true, valign: "top", paraSpaceAfter: 6 });
-  s.addNotes(`Demand is fitted directly on generation: a 1% rise in GDP per person raises generation per person by about ${D.b.toFixed(2)}%, easing as the economy matures. We checked it three ways. Back-test: fitted only to 2019, it predicted 2024 and 2025 within about one percent. Time-series models with no economics in them, ARIMA and ARIMAX, land at about 5,400 to 5,500 terawatt-hours, right beside our grid-only figure. The difference to 6,030 is green hydrogen and the newer loads that history cannot contain. The damped exponential-smoothing model assumes growth dies out, so we treat it as a floor.`);
+    { text: `time-series models land at ${fmt(D.ts_sum.ARIMAX.v)}–${fmt(D.ts_sum.ARIMA.v)} TWh, beside our grid-only ${fmt(D.fc_grid[2047])}; the rest is green hydrogen and new loads history lacks. ML on 16 years swings from ${fmt(D.ml["Neural network (MLP)"].v)} to ${fmt(D.ml["Gradient boosting"].v)}, so ML validates; our model, best in the back-test (${D.bt_struct.toFixed(1)}%), forecasts.`, options: { color: HEX.muted } },
+  ], { x: 8.45, y: 4.85, w: 4.3, h: 1.9, fontSize: 12.5, margin: 0, isTextBox: true, valign: "top", paraSpaceAfter: 6 });
+  s.addNotes(`Demand is fitted directly on generation: a 1% rise in GDP per person raises generation per person by about ${D.b.toFixed(2)}%, easing as the economy matures. We checked it three ways. Back-test: fitted only to 2019, it predicted 2024 and 2025 within about one percent. Time-series models with no economics in them, ARIMA and ARIMAX, land at about 5,400 to 5,500 terawatt-hours, right beside our grid-only figure. The difference to 6,030 is green hydrogen and the newer loads that history cannot contain. The damped exponential-smoothing model assumes growth dies out, so we treat it as a floor. We also trained gradient boosting, a random forest and a small neural network on the same data. With only 16 yearly points they disagree wildly, from about 1,900 to 8,400 terawatt-hours, and tree models cannot predict beyond incomes they have seen. So machine learning is our validator, and the explainable model, which back-tests best, is the forecaster.`);
 }
 
 // ---------------------------------------------------------------- 4 regional

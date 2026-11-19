@@ -463,6 +463,26 @@ with tabs[5]:
                    f"Models that extrapolate history land near {fmt0(nb0.loc[2047, 'gen_grid'])} TWh, our grid-only figure. "
                    "The headline adds green hydrogen and the faster new loads that history cannot contain. The damped-trend model "
                    "assumes growth fades away and is a floor, not a forecast. The ARIMAX fits best because, like our model, it ties generation to GDP.")
+    st.subheader("Cross-check: machine learning on the same data")
+    mls, mlf, mli = csv("ml_summary.csv"), csv("ml_forecasts.csv"), csv("ml_importance.csv")
+    l, r = st.columns([1.5, 1])
+    with l:
+        fig = go.Figure()
+        fig.add_scatter(x=hist.index, y=hist.generation_bu, name="Actual (CEA)", line=dict(color="#E8EEF7", width=2.5))
+        mcol = {"Gradient boosting": "#D08A4E", "Random forest": "#3CC5A8", "Neural network (MLP)": "#A88BFA", "Ridge (linear reference)": "#8C96A6"}
+        for m_ in mlf.model.unique():
+            d_ = mlf[mlf.model == m_]
+            fig.add_scatter(x=d_.fy_end, y=d_.gen_twh, name=m_, line=dict(width=1.8, dash="dot", color=mcol.get(m_, "#4F9BF5")))
+        fig.add_scatter(x=nb0.index, y=nb0.gen_grid, name="Our model, grid only", line=dict(color="#E07A5F", width=3))
+        fig.update_layout(height=380, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh generated", legend=dict(orientation="h", y=-0.2))
+        st.plotly_chart(fig, width="stretch", key="c_ml")
+    with r:
+        t_ = mls.rename(columns={"model": "Model", "framing": "Set-up", "gen_2047_twh": "2047 TWh", "backtest_mae_pct_fy24_26": "Back-test error FY24–26, %"})
+        st.dataframe(t_.style.format({"2047 TWh": "{:,.0f}", "Back-test error FY24–26, %": "{:.1f}"}), width="stretch", hide_index=True)
+        st.caption("Same data and back-test as above (fit to FY19, predict FY24–26). With 16 yearly observations, gradient boosting, random forest "
+                   "and the neural network give 2047 answers from about 1,900 to 8,400 TWh. Tree models trained on levels cannot predict "
+                   "beyond incomes they have seen, so they flatten near 2,000 TWh. Machine learning is therefore our validator; the explainable "
+                   f"model, which back-tests best, is the forecaster. Most important input for {mli.model.iloc[0]}: {mli.feature.iloc[0].lower()}.")
     st.subheader("Demand model tests")
     st.dataframe(csv("v2_tests.csv"), width="stretch", hide_index=True)
 

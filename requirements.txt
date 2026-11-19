@@ -8,3 +8,4 @@ matplotlib==3.11.2
 pulp==4.2.0
 highspy==1.15.1
 pydeck==0.9.3
+scikit-learn==1.9.1

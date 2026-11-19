@@ -118,6 +118,7 @@ def benchmarks():
     P = pd.read_csv(dm.OUT / "pathway_national.csv").set_index("fy_end")
     t = pd.read_csv(dm.OUT / "v2_tests.csv").set_index("test")
     ts = pd.read_csv(dm.OUT / "ts_summary.csv").set_index("model")
+    ml = pd.read_csv(dm.OUT / "ml_summary.csv")
     rows = [
         ("Total generation 2047 (TWh)", "This model, base", round(n.loc[2047, "gen_total"]), "Generation-only demand model"),
         ("Total generation 2047 (TWh)", "This model, Monte Carlo P10", q.loc["gen_total_2047", "P10"], "2,000 runs"),
@@ -126,6 +127,7 @@ def benchmarks():
         ("Total generation 2047 (TWh)", "Published 2047 scenarios, high", 6033, "Range cited by IFPEN"),
         ("Total generation 2047 (TWh)", "ARIMAX time series (GDP-driven)", round(float(ts.loc["ARIMAX", "gen_2047_twh"])), "model/timeseries.py"),
         ("Total generation 2047 (TWh)", "ARIMA trend extrapolation", round(float(ts.loc[[m for m in ts.index if m.startswith("ARIMA(")][0], "gen_2047_twh"])), "model/timeseries.py"),
+        ("Total generation 2047 (TWh)", "Machine learning, range of 3 growth models", "–".join(f"{v:,.0f}" for v in (ml[ml.framing == "growth"].query("~model.str.startswith('Ridge')", engine="python").gen_2047_twh.agg(["min", "max"]))), "model/ml_benchmark.py"),
         ("Generation FY2025-26 (TWh)", "Actual (MoP)", dm.G26_ACTUAL, "Cool, wet year: +1.0%"),
         ("Generation FY2025-26 (TWh)", "Weather-smoothed base used", round(dm.G26, 1), "Mean of actual and FY23-based trend"),
         ("Generation FY2025-26 (TWh)", "MoP generation programme", 2000.4, "Power Sector at a Glance"),

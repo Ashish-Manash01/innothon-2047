@@ -15,6 +15,7 @@ cap = pd.read_csv(O / "mix_base_capacity_gw.csv", index_col=0)
 ts = pd.read_csv(O / "ts_summary.csv").set_index("model")
 tsf = pd.read_csv(O / "ts_forecasts.csv")
 tor = pd.read_csv(O / "v2_tornado.csv")
+ml = pd.read_csv(O / "ml_summary.csv").set_index("model")
 coef = pd.read_csv(O / "v2_coefficients.csv").set_index("term")
 bk = pd.read_csv(O / "backcast_fy26.csv"); bk = bk[bk.region == "India"].set_index("source")
 tests = pd.read_csv(O / "v2_tests.csv").set_index("test")
@@ -54,6 +55,8 @@ D = dict(
     ts_sum={"ARIMA": {"v": float(ts.loc[arima, "gen_2047_twh"]), "e": float(ts.loc[arima, "backtest_mae_pct_fy24_26"])},
             "ARIMAX": {"v": float(ts.loc["ARIMAX", "gen_2047_twh"]), "e": float(ts.loc["ARIMAX", "backtest_mae_pct_fy24_26"])},
             "ETS": {"v": float(ts.loc["ETS-damped", "gen_2047_twh"]), "e": float(ts.loc["ETS-damped", "backtest_mae_pct_fy24_26"])}},
+    ml={k: {"v": float(ml.loc[k, "gen_2047_twh"]), "e": float(ml.loc[k, "backtest_mae_pct_fy24_26"])}
+        for k in ["Gradient boosting", "Random forest", "Neural network (MLP)", "Random forest (levels)"]},
     bt_struct=sum(errs) / len(errs), regions=regs, south_x=float(rg.loc["Southern", "growth_x"]),
     pathway=[{"label": ("FY26 actual" if y == 2026 else f"FY{str(y)[2:]}"), **{k: float(P.loc[y, f"{k}_twh"]) for k in SRC},
               "nf": float(P.loc[y, "non_fossil_pct"]), "coal_pct": float(P.loc[y, "coal_pct"]), "co2": float(P.loc[y, "co2_mt"])} for y in P.index],

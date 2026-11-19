@@ -75,7 +75,7 @@ def fit_forecast(name, y, last, horizon_end, gdp_growth=0.065):
         elif 2021 in yc.index and 2022 not in yc.index:
             yc = yc.drop(2021)
         m = ETSModel(pd.Series(yc.values, index=pd.RangeIndex(len(yc))), error="add", trend="add", damped_trend=True).fit(disp=False)
-        sim = m.simulate(anchor="end", nsimulations=len(yrs), repetitions=2000, random_errors="bootstrap")
+        sim = m.simulate(anchor="end", nsimulations=len(yrs), repetitions=2000, random_errors="bootstrap", random_state=2047)
         mean = m.forecast(len(yrs)).values
         lo, hi = np.percentile(sim.values, 10, axis=1), np.percentile(sim.values, 90, axis=1)
         return name, pd.DataFrame({"mean": np.exp(mean), "lo80": np.exp(lo), "hi80": np.exp(hi)}, index=yrs)

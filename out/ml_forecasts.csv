@@ -1,0 +1,85 @@
+model,fy_end,gen_twh
+Gradient boosting,2027,1944.9
+Gradient boosting,2028,2080.9
+Gradient boosting,2029,2226.5
+Gradient boosting,2030,2382.3
+Gradient boosting,2031,2548.9
+Gradient boosting,2032,2746.8
+Gradient boosting,2033,2960.0
+Gradient boosting,2034,3189.8
+Gradient boosting,2035,3437.5
+Gradient boosting,2036,3704.3
+Gradient boosting,2037,3991.9
+Gradient boosting,2038,4301.8
+Gradient boosting,2039,4635.8
+Gradient boosting,2040,4995.7
+Gradient boosting,2041,5383.5
+Gradient boosting,2042,5801.5
+Gradient boosting,2043,6251.9
+Gradient boosting,2044,6737.3
+Gradient boosting,2045,7260.3
+Gradient boosting,2046,7823.9
+Gradient boosting,2047,8431.4
+Random forest,2027,1930.9
+Random forest,2028,2034.0
+Random forest,2029,2142.6
+Random forest,2030,2257.0
+Random forest,2031,2377.5
+Random forest,2032,2504.5
+Random forest,2033,2638.2
+Random forest,2034,2779.0
+Random forest,2035,2927.4
+Random forest,2036,3083.7
+Random forest,2037,3248.3
+Random forest,2038,3421.8
+Random forest,2039,3604.5
+Random forest,2040,3796.9
+Random forest,2041,3999.6
+Random forest,2042,4213.2
+Random forest,2043,4438.1
+Random forest,2044,4675.1
+Random forest,2045,4924.7
+Random forest,2046,5187.6
+Random forest,2047,5464.6
+Neural network (MLP),2027,2008.9
+Neural network (MLP),2028,2142.8
+Neural network (MLP),2029,2285.7
+Neural network (MLP),2030,2438.1
+Neural network (MLP),2031,2600.7
+Neural network (MLP),2032,2665.9
+Neural network (MLP),2033,2732.7
+Neural network (MLP),2034,2801.3
+Neural network (MLP),2035,2871.5
+Neural network (MLP),2036,2943.5
+Neural network (MLP),2037,2892.0
+Neural network (MLP),2038,2841.5
+Neural network (MLP),2039,2791.8
+Neural network (MLP),2040,2743.0
+Neural network (MLP),2041,2695.0
+Neural network (MLP),2042,2561.0
+Neural network (MLP),2043,2433.7
+Neural network (MLP),2044,2312.7
+Neural network (MLP),2045,2197.7
+Neural network (MLP),2046,2088.5
+Neural network (MLP),2047,1924.6
+Ridge (linear reference),2027,1936.3
+Ridge (linear reference),2028,2026.5
+Ridge (linear reference),2029,2120.8
+Ridge (linear reference),2030,2219.6
+Ridge (linear reference),2031,2322.9
+Ridge (linear reference),2032,2424.8
+Ridge (linear reference),2033,2531.2
+Ridge (linear reference),2034,2642.3
+Ridge (linear reference),2035,2758.2
+Ridge (linear reference),2036,2879.2
+Ridge (linear reference),2037,2996.1
+Ridge (linear reference),2038,3117.8
+Ridge (linear reference),2039,3244.4
+Ridge (linear reference),2040,3376.1
+Ridge (linear reference),2041,3513.3
+Ridge (linear reference),2042,3644.7
+Ridge (linear reference),2043,3781.1
+Ridge (linear reference),2044,3922.6
+Ridge (linear reference),2045,4069.3
+Ridge (linear reference),2046,4221.6
+Ridge (linear reference),2047,4367.2

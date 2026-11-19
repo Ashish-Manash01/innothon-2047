@@ -6,6 +6,7 @@ Total generation 2047 (TWh),"Published 2047 scenarios, low",5254,Range cited by 
 Total generation 2047 (TWh),"Published 2047 scenarios, high",6033,Range cited by IFPEN
 Total generation 2047 (TWh),ARIMAX time series (GDP-driven),5410,model/timeseries.py
 Total generation 2047 (TWh),ARIMA trend extrapolation,5496,model/timeseries.py
+Total generation 2047 (TWh),"Machine learning, range of 3 growth models","1,925–8,431",model/ml_benchmark.py
 Generation FY2025-26 (TWh),Actual (MoP),1847.913,"Cool, wet year: +1.0%"
 Generation FY2025-26 (TWh),Weather-smoothed base used,1892.1,Mean of actual and FY23-based trend
 Generation FY2025-26 (TWh),MoP generation programme,2000.4,Power Sector at a Glance

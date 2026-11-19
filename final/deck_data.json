@@ -169,6 +169,24 @@
    "e": 3.4
   }
  },
+ "ml": {
+  "Gradient boosting": {
+   "v": 8431.0,
+   "e": 12.3
+  },
+  "Random forest": {
+   "v": 5465.0,
+   "e": 8.6
+  },
+  "Neural network (MLP)": {
+   "v": 1925.0,
+   "e": 5.3
+  },
+  "Random forest (levels)": {
+   "v": 2009.0,
+   "e": 24.3
+  }
+ },
  "bt_struct": 2.6333333333333333,
  "regions": [
   {

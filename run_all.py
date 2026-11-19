@@ -17,6 +17,7 @@ STEPS = [
     ("Monte Carlo + tornado + regional", ["model/simulate.py", "2000"]),
     ("Demand model tests", ["model/test_demand.py"]),
     ("Time-series cross-check (ARIMA, ETS, ARIMAX)", ["model/timeseries.py"]),
+    ("Machine-learning benchmark (GBM, RF, MLP)", ["model/ml_benchmark.py"]),
     ("Mix scenarios + verification", ["model/run_mix.py"]),
     ("FY26 backcast", ["model/backcast_fy26.py"]),
     ("Pathway FY30-FY47", ["model/pathway.py"]),

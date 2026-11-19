@@ -1,0 +1,5 @@
+model,feature,importance
+Neural network (MLP),GDP growth,13.51597
+Neural network (MLP),COVID year (FY21),8.77361
+Neural network (MLP),Rebound year (FY22),0.62158
+Neural network (MLP),Population growth,0.52566

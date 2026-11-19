@@ -1,0 +1,19 @@
+model,framing,fy_end,forecast,actual,error_pct
+Gradient boosting,growth,2024,1923.3,1739.091,10.6
+Gradient boosting,growth,2025,2023.3,1829.698,10.6
+Gradient boosting,growth,2026,2137.0,1847.913,15.6
+Random forest,growth,2024,1849.0,1739.091,6.3
+Random forest,growth,2025,1957.4,1829.698,7.0
+Random forest,growth,2026,2078.4,1847.913,12.5
+Neural network (MLP),growth,2024,1824.8,1739.091,4.9
+Neural network (MLP),growth,2025,1897.3,1829.698,3.7
+Neural network (MLP),growth,2026,1980.3,1847.913,7.2
+Ridge (linear reference),growth,2024,1770.5,1739.091,1.8
+Ridge (linear reference),growth,2025,1854.9,1829.698,1.4
+Ridge (linear reference),growth,2026,1942.0,1847.913,5.1
+Random forest (levels),levels,2024,1353.8,1739.091,-22.2
+Random forest (levels),levels,2025,1365.8,1829.698,-25.4
+Random forest (levels),levels,2026,1378.0,1847.913,-25.4
+Gradient boosting (levels),levels,2024,1442.1,1739.091,-17.1
+Gradient boosting (levels),levels,2025,1454.9,1829.698,-20.5
+Gradient boosting (levels),levels,2026,1467.9,1847.913,-20.6
