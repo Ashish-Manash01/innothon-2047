@@ -1,0 +1,4 @@
+model,gen_2047_twh,p10_twh,p90_twh,backtest_mae_pct_fy24_26
+"ARIMA(0, 1, 0)",5495.9,4892.1,6174.2,9.0
+ETS-damped,3434.5,3357.3,3487.3,3.4
+ARIMAX,5410.0,4763.7,6144.0,2.8

@@ -12,7 +12,7 @@ Every number is computed live by the models in `model/`. Moving a slider re-runs
 | Generation mix | Change the CO₂ cap, nuclear policy, build speed, transmission, storage and solar cost; see the national and regional mix, imports/exports, supply by season and time of day, capacity, and 13 independent checks on the solution |
 | Pathway to 2047 | FY26 actual and FY30 / FY35 / FY40 / FY47 solutions: generation, capacity, CO₂ against the cap, regional mix by year |
 | Compare scenarios | Saved settings side by side with the base and draft-NEP-like cases; demand tornado |
-| Validation | FY26 backcast, generation back-test, generation-only benchmarks, model coefficients, model tests |
+| Validation | FY26 backcast, generation back-test, time-series cross-check (ARIMA, ETS, ARIMAX), generation-only benchmarks, model coefficients, model tests |
 | Assumptions & sources | Every parameter with its basis, resource potential vs use, data sources, AI-use disclosure |
 
 ## Run locally
@@ -40,3 +40,7 @@ The rules require energy **generated** as the only basis for forecasting and com
 The earlier consumption-based state model is kept in `model/archive/` for the record and is not run.
 
 AI tools: built with help from Claude (Anthropic), as the competition terms require us to disclose.
+
+## Final deck
+`final/India_2047_Electricity_INNOTHON_Final.pptx` (7 slides). Rebuild from the model outputs with
+`python final/deck_data.py && node final/build_ppt.js` (needs `pptxgenjs`).

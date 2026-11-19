@@ -440,6 +440,29 @@ with tabs[5]:
         st.subheader("Model coefficients (generation basis)")
         st.dataframe(csv("v2_coefficients.csv"), width="stretch", hide_index=True)
         st.caption("Back-test on generation: elasticity fitted to FY11–FY19 only predicts FY24 and FY25 within about 1% (FY26, a cool wet year, +6%); a naive trend misses by 5–10%.")
+    st.subheader("Cross-check: traditional time-series models")
+    tsf, tss, tsb = csv("ts_forecasts.csv"), csv("ts_summary.csv"), csv("ts_backtest.csv")
+    l, r = st.columns([1.5, 1])
+    with l:
+        fig = go.Figure()
+        fig.add_scatter(x=hist.index, y=hist.generation_bu, name="Actual (CEA)", line=dict(color="#E8EEF7", width=2.5))
+        tcol = {"ARIMAX": "#3CC5A8", "ETS-damped": "#A88BFA"}
+        for m_ in tsf.model.unique():
+            d_ = tsf[tsf.model == m_]
+            fig.add_scatter(x=d_.fy_end, y=d_["mean"], name=m_, line=dict(width=1.8, dash="dot", color=tcol.get(m_, "#4F9BF5")))
+        fig.add_scatter(x=nb0.index, y=nb0.gen_grid, name="Headline model, grid only", line=dict(color="#E07A5F", width=2))
+        fig.add_scatter(x=nb0.index, y=nb0.gen_total, name="Headline model, incl. green H₂", line=dict(color="#F5B83D", width=3))
+        fig.update_layout(height=380, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh generated", legend=dict(orientation="h", y=-0.2))
+        st.plotly_chart(fig, width="stretch", key="c_ts")
+    with r:
+        t_ = tss.rename(columns={"model": "Model", "gen_2047_twh": "2047 TWh", "p10_twh": "P10", "p90_twh": "P90",
+                                 "backtest_mae_pct_fy24_26": "Back-test error FY24–26, %"})
+        st.dataframe(t_.style.format({"2047 TWh": "{:,.0f}", "P10": "{:,.0f}", "P90": "{:,.0f}", "Back-test error FY24–26, %": "{:.1f}"}),
+                     width="stretch", hide_index=True)
+        st.caption("Fitted on national generation only (FY10–FY26, COVID years as dummies); back-test = fit to FY19, forecast FY24–26. "
+                   f"Models that extrapolate history land near {fmt0(nb0.loc[2047, 'gen_grid'])} TWh, our grid-only figure. "
+                   "The headline adds green hydrogen and the faster new loads that history cannot contain. The damped-trend model "
+                   "assumes growth fades away and is a floor, not a forecast. The ARIMAX fits best because, like our model, it ties generation to GDP.")
     st.subheader("Demand model tests")
     st.dataframe(csv("v2_tests.csv"), width="stretch", hide_index=True)
 

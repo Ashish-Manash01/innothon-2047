@@ -16,6 +16,7 @@ STEPS = [
     ("Demand model (generation basis)", ["model/demand_gen.py"]),
     ("Monte Carlo + tornado + regional", ["model/simulate.py", "2000"]),
     ("Demand model tests", ["model/test_demand.py"]),
+    ("Time-series cross-check (ARIMA, ETS, ARIMAX)", ["model/timeseries.py"]),
     ("Mix scenarios + verification", ["model/run_mix.py"]),
     ("FY26 backcast", ["model/backcast_fy26.py"]),
     ("Pathway FY30-FY47", ["model/pathway.py"]),

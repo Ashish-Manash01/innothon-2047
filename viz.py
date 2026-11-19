@@ -44,9 +44,9 @@ h1, h2, h3, [data-testid="stMetricValue"] {{ font-family: 'Sora', system-ui, san
 [data-testid="stDataFrame"] {{ border: 1px solid {LINE}; border-radius: 10px; }}
 .hero h1 {{ font-size: clamp(1.9rem, 2.6vw, 2.7rem); line-height: 1.08; font-weight: 700; margin: 0 0 0.6rem; color: {TEXT}; }}
 .hero p.lede {{ font-size: 1.12rem; line-height: 1.55; color: #C3CEDD; max-width: 34rem; margin: 0 0 1.4rem; }}
-.hero .facts {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: 1px solid {LINE}; max-width: 36rem; }}
-.hero .facts div {{ padding: 14px 16px 4px 0; }}
-.hero .facts b {{ display: block; white-space: nowrap; font-family: 'Sora', sans-serif; font-size: 1.3rem; color: {TEXT}; font-weight: 600; }}
+.hero .facts {{ display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 0; border-top: 1px solid {LINE}; max-width: 36rem; }}
+.hero .facts div {{ padding: 14px 14px 4px 0; min-width: 0; }}
+.hero .facts b {{ display: block; font-family: 'Sora', sans-serif; font-size: clamp(1rem, 1.5vw, 1.3rem); color: {TEXT}; font-weight: 600; }}
 .hero .facts span {{ font-size: 0.9rem; color: {MUTED}; }}
 .legend {{ display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.88rem; color: {MUTED}; margin-top: 6px; }}
 .legend i {{ display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }}

@@ -6,3 +6,5 @@ out/*.zip
 out/official_diff.csv
 .venv/
 out/*.png
+final/*.pdf
+final/*.jpg
