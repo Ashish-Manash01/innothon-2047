@@ -1,7 +1,7 @@
 """Export every dataset the dashboard reads into out/dash/ (CSV), with one row per scenario x year x region.
 
 Grids are FULL model runs (no interpolation):
-  demand grid  : GDP {5.5..7.5%} x income elasticity {0.62, 0.689, 0.85} x EV {low, base, high}
+  demand grid  : GDP {5.5..7.5%} x income elasticity {b - SE, b, b + SE} (b = 0.761, SE 0.104) x EV {low, base, high}
                  x data centres {low, base, high} x green H2 {5, 12, 25 Mt}  = 405 runs, national path FY26-FY47
                  + regional split at FY30/35/40/47.
   mix grid     : CO2 cap {0.8, 1.0, 1.2, 1.45, 1.7 Gt} x nuclear policy {<=50 GW, least-cost <=100, Mission =100}
