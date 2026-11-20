@@ -52,7 +52,8 @@ h1, h2, h3, [data-testid="stMetricValue"] {{ font-family: 'Sora', system-ui, san
 .legend i {{ display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }}
 a {{ color: {COL['solar']}; }}
 :focus-visible {{ outline: 2px solid {COL['solar']} !important; outline-offset: 2px; }}
-@media (max-width: 760px) {{ .hero .facts {{ grid-template-columns: 1fr; }} }}
+@media (max-width: 1100px) {{ .hero .facts {{ grid-template-columns: 1fr; }} .hero .facts div {{ padding: 10px 0 2px; }} }}
+.hero .facts span {{ word-break: normal; overflow-wrap: normal; }}
 </style>
 """
 
@@ -116,7 +117,7 @@ def grid_map_3d(G, demand, flows, src, lab, height=520, key=None, scale=150):
                     get_source_color=hex_rgb("#FFFFFF", 255), get_target_color=hex_rgb("#F5B83D", 230),
                     get_height=0.9, get_tilt=0, pickable=True, width_min_pixels=2, great_circle=False)
     view = pdk.ViewState(latitude=20.2, longitude=81.8, zoom=3.45, pitch=40, bearing=-8)
-    deck = pdk.Deck(layers=[poly, arc], initial_view_state=view, map_provider="carto", map_style=pdk.map_styles.CARTO_DARK_NO_LABELS,
+    deck = pdk.Deck(layers=[poly, arc], initial_view_state=view, map_style=None,
                     tooltip={"html": "{tip}", "style": {"background": PANEL, "color": TEXT, "border": f"1px solid {LINE}",
                                                         "font-family": "Source Sans 3", "font-size": "13px", "border-radius": "8px"}})
     st.pydeck_chart(deck, height=height, key=key)

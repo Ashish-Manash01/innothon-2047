@@ -162,6 +162,16 @@ with hr:
                     '<p style="color:#93A3BA;font-size:0.88rem;margin-top:4px">Height = electricity generated in 2047. Arcs = net power sent between regions. Drag to tilt, hover for the mix.</p>',
                     unsafe_allow_html=True)
 
+with st.expander("New here? How to use this dashboard", expanded=False):
+    g1, g2, g3 = st.columns(3)
+    g1.markdown("**1. Change an assumption**  \nUse the sliders on the left: economic growth, population, EVs, data centres, hydrogen. "
+                "The forecast for India and each region re-runs instantly.")
+    g2.markdown("**2. Change the policy**  \nOn the *Generation mix* tab, set the CO₂ cap, nuclear policy, build speed or transmission. "
+                "The optimiser re-plans all five regions in about two seconds.")
+    g3.markdown("**3. Check the evidence**  \n*Validation* shows the back-test, time-series and machine-learning checks; "
+                "*Assumptions & sources* lists every number and where it comes from. *Reset* in the sidebar returns to the base case.")
+    st.caption("TWh = terawatt-hour, a billion units of electricity. FY2046-47 is called 2047 throughout. All figures are electricity generated.")
+
 tabs = st.tabs(["Overview", "Demand forecast", "Generation mix", "Pathway to 2047", "Compare scenarios", "Validation", "Assumptions & sources"])
 
 
@@ -194,6 +204,7 @@ def fan_chart(series):
 
 # ================================================================== OVERVIEW
 with tabs[0]:
+    st.caption("The headline answer: how much electricity India generates in 2047, from which sources, and how each grid region contributes.")
     c = st.columns(3) + st.columns(3)
     c[0].metric("Generation FY2046-47", f"{fmt0(tot)} TWh", f"{tot - nb0.loc[2047,'gen_total']:+,.0f} vs base" if abs(tot - nb0.loc[2047, 'gen_total']) > 0.5 else None)
     c[1].metric("Grid demand (excl. H₂)", f"{fmt0(nb.loc[2047,'gen_grid'])} TWh")
@@ -233,13 +244,13 @@ with tabs[0]:
 
 # ================================================================== DEMAND
 with tabs[1]:
-    st.caption("Use the sidebar to change the drivers. Results update instantly; the base case is shown dashed.")
+    st.caption("How much electricity India and each region will need, and why. Change the drivers in the sidebar; the base case is shown dashed.")
     c = st.columns(5)
     c[0].metric("Total 2047", f"{fmt0(tot)} TWh", f"{tot - nb0.loc[2047,'gen_total']:+,.0f} vs base")
-    c[1].metric("Organic demand (generation)", f"{fmt0(nb.loc[2047,'gen_organic'])} TWh")
+    c[1].metric("Trend growth", f"{fmt0(nb.loc[2047,'gen_organic'])} TWh")
     c[2].metric("EVs + data centres", f"{fmt0(nb.loc[2047,'gen_ev_dc'])} TWh")
     c[3].metric("Green hydrogen", f"{fmt0(nb.loc[2047,'gen_h2'])} TWh", f"{h2:.1f} Mt × {base['kwh_per_kg']:.0f} kWh/kg", delta_color="off")
-    c[4].metric("Heat + cooking electrification", f"{fmt0(nb.loc[2047,'gen_elec'])} TWh", elec, delta_color="off")
+    c[4].metric("Heat + cooking", f"{fmt0(nb.loc[2047,'gen_elec'])} TWh", elec, delta_color="off")
     l, r = st.columns(2)
     with l:
         st.subheader("Selected vs base")
@@ -248,7 +259,7 @@ with tabs[1]:
     with r:
         st.subheader("What the demand is made of")
         fig = go.Figure()
-        for col, name, cl in [("gen_organic", "Organic demand", "#4F9BF5"), ("gen_ev_dc", "EVs + data centres", "#F5B83D"), ("gen_elec", "Heat + cooking", "#E07A5F"), ("gen_h2", "Green hydrogen", "#3CC5A8")]:
+        for col, name, cl in [("gen_organic", "Trend growth", "#4F9BF5"), ("gen_ev_dc", "EVs + data centres", "#F5B83D"), ("gen_elec", "Heat + cooking", "#E07A5F"), ("gen_h2", "Green hydrogen", "#3CC5A8")]:
             fig.add_scatter(x=nb.index, y=nb[col], stackgroup="one", name=name, line=dict(color=cl))
         fig.update_layout(height=380, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh generated", legend=dict(orientation="h", y=-0.2), hovermode="x unified")
         st.plotly_chart(fig, width="stretch", key="c6")
@@ -285,7 +296,7 @@ with tabs[1]:
 
 # ================================================================== MIX
 with tabs[2]:
-    st.caption("Each change solves the least-cost optimiser again for FY2046-47 (5 regions × 6 sources × 12 time slices), using the demand from the sidebar.")
+    st.caption("Where the electricity should come from in each region, at the lowest cost. Each change solves the least-cost optimiser again for FY2046-47 (5 regions × 6 sources × 12 time slices), using the demand from the sidebar.")
     c = st.columns(3)
     co2 = c[0].slider("CO₂ cap, Mt", 600, 2000, 1200, 50, help="Today ≈ 1,200 Mt. Draft-NEP-like ≈ 1,700 Mt.")
     nuc = c[1].selectbox("Nuclear policy", ["Least cost (≤ 100 GW)", "Mission (100 GW)", "Delayed (≤ 50 GW)"])
@@ -362,7 +373,7 @@ with tabs[2]:
 
 # ================================================================== PATHWAY
 with tabs[3]:
-    st.caption("The optimiser solved at FY30, FY35, FY40 and FY47 with each year's demand (from the sidebar), committed fleet, "
+    st.caption("How India gets from today's grid to 2047, milestone by milestone. The optimiser solved at FY30, FY35, FY40 and FY47 with each year's demand (from the sidebar), committed fleet, "
                "build limits anchored to CEA's 2035-36 projection, transmission growth and a CO₂ path of 1.40 / 1.45 / 1.35 / 1.20 Gt.")
     with st.spinner("Solving four milestone years…"):
         pw = run_pathway(DKEY)
@@ -424,6 +435,7 @@ with tabs[4]:
 
 # ================================================================== VALIDATION
 with tabs[5]:
+    st.caption("Why the forecast can be trusted: tested on today's grid, against the recent past, and against time-series and machine-learning models.")
     l, r = st.columns(2)
     with l:
         st.subheader("Backcast: the optimiser on FY26's fleet and demand")
@@ -489,6 +501,7 @@ with tabs[5]:
 
 # ================================================================== ASSUMPTIONS
 with tabs[6]:
+    st.caption("Every assumption, its value and its source. Search to find one.")
     a = pd.read_csv(OUT / "dash" / "assumptions.csv")
     q = st.text_input("Search assumptions")
     st.dataframe(a[a.apply(lambda r: q.lower() in " ".join(map(str, r.values)).lower(), axis=1)] if q else a, width="stretch", hide_index=True)
