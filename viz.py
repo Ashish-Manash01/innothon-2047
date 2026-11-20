@@ -17,8 +17,10 @@ import streamlit as st
 GEO = Path(__file__).parent / "data" / "geo"
 
 INK, PANEL, LINE, TEXT, MUTED = "#0D1626", "#142238", "#24364F", "#E8EEF7", "#93A3BA"
-COL = dict(coal="#8C96A6", gas="#D08A4E", nuclear="#A88BFA", hydro="#4F9BF5", solar="#F5B83D", wind="#3CC5A8",
-           bess="#F07EA0", psp="#7FB2E5")
+# Source colours, in stacking order coal, gas, nuclear, hydro, solar, wind. Checked with a colour-blindness
+# validator on the dark surface: every neighbouring pair stays distinguishable (coal is deliberately grey).
+COL = dict(coal="#7D8799", gas="#E0773C", nuclear="#D2559B", hydro="#3D86E8", solar="#F2B632", wind="#2DB38C",
+           bess="#B9A7F5", psp="#7FB2E5")
 REGCOL = {"Northern": "#F5B83D", "Western": "#E07A5F", "Southern": "#3CC5A8", "Eastern": "#8C96A6", "North-Eastern": "#4F9BF5"}
 # Load-weighted hubs used as arc endpoints (approximate centres of each region's demand)
 HUB = {"Northern": (76.8, 27.6), "Western": (75.2, 21.2), "Southern": (78.3, 13.6), "Eastern": (86.2, 23.4), "North-Eastern": (92.6, 26.0)}
@@ -58,17 +60,79 @@ a {{ color: {COL['solar']}; }}
 """
 
 
+GRID = "rgba(147,163,186,0.14)"
+
+
+def _rgba(h, a):
+    h = h.lstrip("#")
+    if len(h) != 6:
+        return None
+    return f"rgba({int(h[0:2], 16)},{int(h[2:4], 16)},{int(h[4:6], 16)},{a})"
+
+
+def polish(fig):
+    """One consistent finish for every Plotly chart: quiet axes, legend on top, thin gaps between fills,
+    rounded bar ends, readable hover. Applied automatically to every st.plotly_chart call."""
+    types = {t.type for t in fig.data}
+    cartesian = bool(types & {"bar", "scatter"}) and "pie" not in types
+    show_leg = fig.layout.showlegend is not False and len(fig.data) > 1
+    m = fig.layout.margin
+    fig.update_layout(
+        font=dict(family="Source Sans 3, sans-serif", color=MUTED, size=13),
+        hoverlabel=dict(bgcolor=PANEL, bordercolor=LINE, font=dict(family="Source Sans 3, sans-serif", color=TEXT, size=13), align="left"),
+        margin=dict(l=(m.l if m.l is not None else 10), r=(m.r if m.r is not None else 10), t=(44 if show_leg else 16), b=(m.b if m.b is not None else 10)),
+    )
+    if show_leg:
+        fig.update_layout(legend=dict(orientation="h", x=0, xanchor="left", y=1.02, yanchor="bottom", title=None, traceorder="normal",
+                                      font=dict(color=MUTED, size=12), itemwidth=30, bgcolor="rgba(0,0,0,0)"))
+    if cartesian:
+        horiz = any(getattr(t, "orientation", None) == "h" for t in fig.data if t.type == "bar")
+        val = dict(showgrid=True, gridcolor=GRID, gridwidth=1, zeroline=True, zerolinecolor="rgba(147,163,186,0.45)", zerolinewidth=1, showline=False, ticks="",
+                   tickfont=dict(color=MUTED, size=12), title_font=dict(color=MUTED, size=12), separatethousands=True)
+        cat = dict(showgrid=False, zeroline=False, showline=True, linecolor=LINE, linewidth=1, ticks="outside", ticklen=4,
+                   tickcolor=LINE, tickfont=dict(color=MUTED, size=12), title_font=dict(color=MUTED, size=12))
+        fig.update_xaxes(**(val if horiz else cat))
+        fig.update_yaxes(**(cat if horiz else val))
+        if horiz:
+            fig.update_yaxes(showline=False, ticks="", tickfont=dict(color=TEXT, size=13))
+        if "bar" in types:
+            fig.update_layout(bargap=0.34, bargroupgap=0.1, barcornerradius=4)
+            fig.update_traces(selector=dict(type="bar"), marker_line=dict(color=INK, width=1.5))
+        lines = [t for t in fig.data if t.type == "scatter" and t.fill not in ("toself",)]
+        if len(lines) > 1 and "bar" not in types:
+            fig.update_layout(hovermode="x unified")
+            fig.update_xaxes(showspikes=True, spikemode="across", spikecolor=MUTED, spikethickness=1, spikedash="dot", spikesnap="cursor")
+        for t in lines:
+            if t.stackgroup:
+                c = t.line.color
+                t.update(line=dict(width=1, color=c), fillcolor=_rgba(c, 0.78) if c and c.startswith("#") else None)
+            elif t.line.width is None:
+                t.line.width = 2.2
+    if "pie" in types:
+        fig.update_traces(selector=dict(type="pie"), marker_line=dict(color=INK, width=3),
+                          textfont=dict(color=INK, size=12, family="Source Sans 3, sans-serif"), insidetextorientation="horizontal")
+    return fig
+
+
 def setup():
     st.markdown(CSS, unsafe_allow_html=True)
     t = go.layout.Template()
     t.layout = go.Layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
                          font=dict(family="Source Sans 3, sans-serif", color=TEXT, size=13),
-                         xaxis=dict(gridcolor=LINE, zerolinecolor=LINE, linecolor=LINE),
-                         yaxis=dict(gridcolor=LINE, zerolinecolor=LINE, linecolor=LINE),
+                         xaxis=dict(gridcolor=GRID, zerolinecolor=LINE, linecolor=LINE),
+                         yaxis=dict(gridcolor=GRID, zerolinecolor=LINE, linecolor=LINE),
                          legend=dict(bgcolor="rgba(0,0,0,0)"), hoverlabel=dict(bgcolor=PANEL, bordercolor=LINE, font_color=TEXT),
                          colorway=[COL[k] for k in ("hydro", "solar", "wind", "nuclear", "gas", "coal")])
     pio.templates["nightgrid"] = t
     pio.templates.default = "plotly_dark+nightgrid"
+    if not getattr(st.plotly_chart, "_polished", False):
+        orig = st.plotly_chart
+
+        def plotly_chart(fig, *a, **k):
+            k.setdefault("config", {"displayModeBar": False})
+            return orig(polish(fig), *a, **k)
+        plotly_chart._polished = True
+        st.plotly_chart = plotly_chart
 
 
 @st.cache_data

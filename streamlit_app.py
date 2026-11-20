@@ -192,7 +192,7 @@ def fan_chart(series):
     yrs = [2026, 2031, 2036, 2041, 2047]
     lo = [nb0.loc[2026, "gen_total"]] + [q[f"gen_total_{y}"].quantile(0.1) for y in yrs[1:]]
     hi = [nb0.loc[2026, "gen_total"]] + [q[f"gen_total_{y}"].quantile(0.9) for y in yrs[1:]]
-    fig.add_scatter(x=yrs + yrs[::-1], y=hi + lo[::-1], fill="toself", fillcolor="rgba(58,134,200,0.15)", line=dict(width=0), mode="lines",
+    fig.add_scatter(x=yrs + yrs[::-1], y=hi + lo[::-1], fill="toself", fillcolor="rgba(61,134,232,0.22)", line=dict(width=0), mode="lines",
                     name="Monte Carlo P10–P90", hoverinfo="skip")
     fig.add_scatter(x=hist.index, y=hist.generation_bu, name="Actual (CEA)", line=dict(color="#E8EEF7", width=2.5))
     for name, s, style in series:
@@ -279,7 +279,7 @@ with tabs[1]:
         st.subheader("By region")
         rr = reg[reg.fy_end.isin([2030, 2035, 2040, 2047])].pivot(index="region", columns="fy_end", values="gen_total_twh").reindex(REG)
         fig = go.Figure()
-        for y, cl in zip(rr.columns, ["#5A6B84", "#A88BFA", "#4F9BF5", "#F5B83D"]):
+        for y, cl in zip(rr.columns, ["#2B4A73", "#3B6CAB", "#5A93E0", "#A9CBF7"]):
             fig.add_bar(x=REG, y=rr[y], name=f"FY{str(y)[2:]}", marker_color=cl)
         fig.update_layout(barmode="group", height=360, margin=dict(l=10, r=10, t=10, b=10), yaxis_title="TWh generated", legend=dict(orientation="h", y=-0.2))
         st.plotly_chart(fig, width="stretch", key="c8")
