@@ -167,39 +167,58 @@ async function icon(Comp, color, px = 256) {
     s.addNotes("Here's where the electricity is made in 2047; the numbers on the map are terawatt-hours. The plan isn't one mix copied everywhere. The North becomes the solar hub. The West has the most of everything and exports. The South uses its wind and adds nuclear. The East has the weakest sun and almost no wind, so it relies on coal and nuclear and imports clean power over bigger transmission lines. The North-East is hydro. The live dashboard shows this in 3D with the power flows drawn as arcs.");
   }
 
-  // ================================================================ 6 what could change it
+  // ================================================================ 6 the whole process, data to dashboard
   {
     const s = pres.addSlide({ masterName: "Light" });
-    title(s, "What could change the answer");
-    const T = D.tornado.slice().sort((a, b) => (b.high - b.low) - (a.high - a.low)).slice(0, 4);
-    s.addText("Biggest uncertainties in the 2047 total", { x: 0.7, y: 1.45, w: 5.6, h: 0.45, fontSize: 18, bold: true, color: K.ink, margin: 0, isTextBox: true });
-    const nice = (l) => l.replace("Green H2", "Green hydrogen").replace(/\(.*\)/, "").replace("Income elasticity", "How fast use grows with income").replace("GDP growth", "Economic growth").trim();
-    T.forEach((t, i) => {
-      const y = 2.05 + i * 0.95;
-      s.addText(nice(t.label), { x: 0.7, y, w: 5.6, h: 0.35, fontSize: 15, color: K.ink, margin: 0, isTextBox: true });
-      const mid = 3.4, sc = 2.2 / 800;
-      s.addShape(pres.shapes.RECTANGLE, { x: mid + t.low * sc, y: y + 0.4, w: -t.low * sc, h: 0.3, fill: { color: "B8C1CD" }, line: { type: "none" }, objectName: `lo-${i}` });
-      s.addShape(pres.shapes.RECTANGLE, { x: mid, y: y + 0.4, w: t.high * sc, h: 0.3, fill: { color: K.wind }, line: { type: "none" }, objectName: `hi-${i}` });
-      s.addText(`${fmt(t.low)}`, { x: mid + t.low * sc - 0.95, y: y + 0.37, w: 0.9, h: 0.35, fontSize: 12, color: K.muted, align: "right", margin: 0, isTextBox: true });
-      s.addText(`+${fmt(t.high)}`, { x: mid + t.high * sc + 0.05, y: y + 0.37, w: 0.9, h: 0.35, fontSize: 12, color: K.muted, margin: 0, isTextBox: true });
-    });
-    say(s, `Change in 2047 TWh, low case grey, high case green. All together the likely range is ${fmt(Math.round(D.p10 / 50) * 50)} to ${fmt(Math.round(D.p90 / 50) * 50)} TWh.`, { x: 0.7, y: 5.95, w: 5.8, h: 0.6, fontSize: 13 });
-    s.addText("What if…", { x: 7.1, y: 1.45, w: 5.5, h: 0.45, fontSize: 18, bold: true, color: K.ink, margin: 0, isTextBox: true });
-    const fast = D.scen.find((r) => r.name.startsWith("Solar & wind 25% faster"));
-    const ifs = [
-      [Fa.FaHourglassHalf, "B4562F", "India builds solar and wind 25% slower", `Emissions overshoot by ${fmt(D.slow_over)} million tonnes a year.`],
-      [Fa.FaAtom, K.nuclear, "Nuclear plants are delayed", `${fmt(D.nuc_over)} million tonnes more CO₂, and imported gas comes back.`],
-      [Fa.FaBolt, K.gold, "India builds 25% faster", `Electricity gets cheaper: ₹${fast.cost.toFixed(2)} per unit instead of ₹${D.cost.toFixed(2)}.`],
-    ];
-    for (let i = 0; i < ifs.length; i++) {
-      const [Ic, c, h, t] = ifs[i]; const y = 2.05 + i * 1.3;
-      s.addShape(pres.shapes.OVAL, { x: 7.1, y, w: 0.7, h: 0.7, fill: { color: K.soft }, line: { type: "none" }, objectName: `if-ring-${i}` });
-      s.addImage({ data: await icon(Ic, c), x: 7.28, y: y + 0.18, w: 0.34, h: 0.34, altText: h });
-      s.addText(h, { x: 8.05, y: y - 0.02, w: 4.6, h: 0.4, fontSize: 16, bold: true, color: K.ink, margin: 0, isTextBox: true });
-      say(s, t, { x: 8.05, y: y + 0.38, w: 4.6, h: 0.6, fontSize: 14 });
-    }
-    s.addText("How fast India builds matters more than what solar costs.", { x: 7.1, y: 5.95, w: 5.5, h: 0.6, fontSize: 15, bold: true, color: K.ink, margin: 0, isTextBox: true });
-    s.addNotes("No forecast is certain, so I tested what moves it. On demand, the biggest swings come from economic growth, green hydrogen and how fast use grows with income. On supply, the lesson is clear: speed of building matters more than cost. Build slower and emissions overshoot badly. Delay nuclear and India goes back to imported gas. Build faster and electricity actually gets cheaper.");
+    title(s, "From raw data to a live dashboard");
+    const IN = "EAF2FD", PR = K.soft, OUT = "FDF3DC", AR = "9AA6B8";
+    const box = (x, y, w, h, fill, head, body, name) => {
+      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w, h, fill: { color: fill }, line: { type: "none" }, rectRadius: 0.1, objectName: name });
+      s.addText([{ text: head, options: { bold: true, color: K.ink, fontSize: 14, breakLine: !!body } },
+                 ...(body ? [{ text: body, options: { color: K.muted, fontSize: 11.5 } }] : [])],
+        { x: x + 0.12, y: y + 0.06, w: w - 0.24, h: h - 0.12, margin: 0, isTextBox: true, valign: "middle", paraSpaceAfter: 2 });
+    };
+    const arrow = (x, y, w, h, name) => s.addShape(pres.shapes.LINE, { x, y, w, h, line: { color: AR, width: 2, endArrowType: "triangle" }, objectName: name });
+    const label = (t, x) => s.addText(t, { x, y: 1.3, w: 2.4, h: 0.3, fontSize: 12, bold: true, color: K.gold, margin: 0, isTextBox: true });
+
+    // column labels
+    label("1  Data", 0.6); label("2  Check", 3.2); label("3  Forecast", 5.55); label("4  Plan", 8.0); label("5  Share", 10.5);
+
+    // 1 data sources
+    const src = [["Official INNOTHON dataset", "State population and GSDP"], ["NPP / CEA reports", "Generation by region, FY19–26"],
+                 ["Grid-India", "Power traded between regions"], ["MoP, UN, MoSPI", "National generation, population, GDP"]];
+    src.forEach(([h, b], i) => box(0.6, 1.7 + i * 1.12, 2.3, 0.95, IN, h, b, `src-${i}`));
+    // bracket arrows into Check
+    src.forEach((_, i) => s.addShape(pres.shapes.LINE, { x: 2.9, y: 2.17 + i * 1.12, w: 0.1, h: 0, line: { color: AR, width: 2 }, objectName: `a-src-${i}` }));
+    s.addShape(pres.shapes.LINE, { x: 3.0, y: 2.17, w: 0, h: 3.36, line: { color: AR, width: 2 }, objectName: "bracket" });
+    arrow(3.0, 3.85, 0.2, 0, "a-into-check");
+
+    // 2 clean and check
+    box(3.2, 3.15, 2.0, 1.4, PR, "Clean and check", "16 automated checks. Regions add up to the national total exactly.", "check");
+    arrow(5.2, 3.85, 0.35, 0, "a-check-demand");
+
+    // 3 forecast
+    box(5.55, 3.0, 2.15, 1.7, PR, "Demand model", "Generation grows with income and population, region by region. Plus EVs, data centres, hydrogen.", "demand");
+    box(5.55, 1.65, 2.15, 1.0, PR, "Validation", "Back-test, ARIMA, ETS, ARIMAX, neural network, random forest", "validate");
+    box(5.55, 5.05, 2.15, 1.0, PR, "Uncertainty", "2,000 Monte Carlo runs, tornado chart", "uncert");
+    arrow(6.62, 3.0, 0, -0.35, "a-demand-val"); arrow(6.62, 4.7, 0, 0.35, "a-demand-unc");
+    arrow(7.7, 3.85, 0.3, 0, "a-demand-mix");
+
+    // 4 plan
+    box(8.0, 3.0, 2.15, 1.7, PR, "Mix optimiser", "Cheapest plan for 5 regions × 6 sources, day, evening and night, within limits on land, build speed, grid and CO₂.", "mix");
+    box(8.0, 5.05, 2.15, 1.0, PR, "Pathway", "Same optimiser for 2030, 2035, 2040, 2047", "path");
+    arrow(9.07, 4.7, 0, 0.35, "a-mix-path");
+    arrow(10.15, 3.85, 0.35, 0, "a-mix-out");
+
+    // 5 outputs
+    box(10.5, 1.65, 2.2, 1.35, OUT, `${fmt(D.total)} TWh, ${Math.round(D.nonfossil)}% clean`, "National and regional answer", "out-answer");
+    box(10.5, 3.2, 2.2, 1.35, OUT, "Live dashboard", "Move any slider and every model re-runs, with a 3D map", "out-dash");
+    box(10.5, 4.75, 2.2, 1.3, OUT, "GitHub", "All data, code and tests. One command rebuilds everything", "out-git");
+    s.addShape(pres.shapes.LINE, { x: 10.35, y: 2.32, w: 0, h: 3.08, line: { color: AR, width: 2 }, objectName: "bracket-out" });
+    [2.32, 3.87, 5.4].forEach((y, i) => arrow(10.35, y, 0.15, 0, `a-out-${i}`));
+
+    say(s, "Every number on these slides is produced by this pipeline, and the deck itself is generated from its outputs.", { x: 0.6, y: 6.3, w: 9.5, h: 0.4, fontSize: 13 });
+    s.addNotes("This is the whole system on one page. On the left, the data: the official INNOTHON dataset for population and GDP, the National Power Portal's generation by region, the power traded between regions, and national history. Everything is checked automatically; the regional numbers add up exactly to the national total. The demand model forecasts generation for India and each region, and I validate it against time-series and machine-learning models and stress-test it with 2,000 Monte Carlo runs. The optimiser then decides the cheapest mix for each region, and does it again for 2030, 2035 and 2040 to give the pathway. The results feed the live dashboard and the GitHub repository, where one command rebuilds everything from scratch.");
   }
 
   // ================================================================ 7 actions + close
