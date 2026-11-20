@@ -152,6 +152,7 @@ with hl:
 <div><b>{S['non_fossil_%']:.0f}%</b><span>non-fossil generation</span></div>
 <div><b>₹{S['cost_rs_per_kwh']:.2f}</b><span>average cost per kWh</span></div>
 </div></div>""", unsafe_allow_html=True)
+    st.markdown('<p style="color:#F5B83D;font-family:Sora,sans-serif;font-size:0.95rem;margin:0 0 6px">Ashish Manash, Team Innovexa · NIT Karnataka, Surathkal</p>', unsafe_allow_html=True)
     st.caption(f"Base case {fmt0(nb0.loc[2047,'gen_total'])} TWh; {((mult ** (1/21)) - 1) * 100:.1f}% a year from FY26's {fmt0(fy26)} TWh. "
                "Forecast fitted on energy generated only. Move the sidebar sliders and everything re-runs.")
 with hr:
