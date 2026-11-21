@@ -38,5 +38,3 @@ The rules require energy **generated** as the only basis for forecasting and com
 - regional population and GSDP come from the official INNOTHON dataset (`data/official/`, checked by `data/check_official_dataset.py`) and MoSPI; its installed-capacity columns are not used;
 - capacity appears only as a physical limit inside the optimiser, never as a forecast or a benchmark.
 The earlier consumption-based state model is kept in `model/archive/` for the record and is not run.
-
-AI tools: built with help from Claude (Anthropic), as the competition terms require us to disclose.
