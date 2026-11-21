@@ -40,7 +40,3 @@ The rules require energy **generated** as the only basis for forecasting and com
 The earlier consumption-based state model is kept in `model/archive/` for the record and is not run.
 
 AI tools: built with help from Claude (Anthropic), as the competition terms require us to disclose.
-
-## Final deck
-`final/India_2047_Electricity_INNOTHON_Final.pptx` (7 slides). Rebuild from the model outputs with
-`python final/deck_data.py && node final/build_ppt.js` (needs `pptxgenjs`).

@@ -8,3 +8,4 @@ out/official_diff.csv
 out/*.png
 final/*.pdf
 final/*.jpg
+final/*.pptx
